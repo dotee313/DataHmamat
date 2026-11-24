@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// هوية بصرية هادئة ونظيفة: أخضر عميق مع لمسة ذهبية.
+/// هوية بصرية هادئة ونظيفة: بنفسجي وذهبي، متوافقة مع الشعار.
 abstract final class AppTheme {
-  static const Color green = Color(0xFF1F6F5C);
-  static const Color greenDark = Color(0xFF123B32);
-  static const Color gold = Color(0xFFC8A45D);
-  static const Color canvas = Color(0xFFF7F5F0);
+  static const Color green = Color(0xFF8338EC);
+  static const Color greenDark = Color(0xFF14213D);
+  static const Color gold = Color(0xFFFCA311);
+  static const Color canvas = Color(0xFFF7F7FB);
   static const Color card = Colors.white;
-  static const Color ink = Color(0xFF24322E);
-  static const Color muted = Color(0xFF6F7C77);
-  static const Color line = Color(0xFFE4E6E1);
+  static const Color ink = Color(0xFF14213D);
+  static const Color muted = Color(0xFF667085);
+  static const Color line = Color(0xFFE4E7EC);
 
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
