@@ -1,5 +1,10 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    # Flutter 3.50 يصنّف استيراد material.dart كإشارة فقط؛ لا نريد فشل البناء بسببها.
+    deprecated_member_use: ignore
+
 linter:
   rules:
     avoid_print: false

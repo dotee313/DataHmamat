@@ -59,7 +59,7 @@ class Store {
 
   Future<String?> chooseFolder() async {
     // ignore: deprecated_member_use
-    final picked = await FilePicker.platform.getDirectoryPath(
+    final picked = await FilePicker.getDirectoryPath(
       dialogTitle: 'اختر مجلد حفظ بيانات الحمام',
     );
     if (picked == null || picked.isEmpty) return null;

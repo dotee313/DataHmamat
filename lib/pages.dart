@@ -285,7 +285,7 @@ class _PedigreePageState extends State<PedigreePage> {
       padding: const EdgeInsets.all(16),
       children: [
         DropdownButtonFormField<String>(
-          initialValue: selected.id,
+          initialValue: selected!.id,
           decoration: const InputDecoration(
             labelText: 'اختر الطير',
             prefixIcon: Icon(Icons.pets_outlined),
@@ -300,7 +300,7 @@ class _PedigreePageState extends State<PedigreePage> {
         SectionCard(
           title: 'شجرة الأجداد',
           icon: Icons.account_tree_outlined,
-          child: _ancestor(selected.id, 0),
+          child: _ancestor(selected!.id, 0),
         ),
         SectionCard(
           title: 'الأبناء المباشرون',
