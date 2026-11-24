@@ -300,7 +300,7 @@ class _PedigreePageState extends State<PedigreePage> {
         SectionCard(
           title: 'شجرة الأجداد',
           icon: Icons.account_tree_outlined,
-          child: _ancestor(selected!.id, 0),
+          child: _ancestor(selected.id, 0),
         ),
         SectionCard(
           title: 'الأبناء المباشرون',
