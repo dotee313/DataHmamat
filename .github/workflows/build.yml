@@ -26,6 +26,8 @@ jobs:
         run: |
           flutter create --org com.roga --project-name data_hmamat --platforms android .
           rm -rf test
+          # لا يوجد كود أصلي في المشروع؛ منع تنزيل NDK غير الضروري.
+          sed -i '/ndkVersion/d' android/app/build.gradle.kts android/app/build.gradle 2>/dev/null || true
       - name: Patch manifest (permissions + app name)
         run: |
           M=android/app/src/main/AndroidManifest.xml
