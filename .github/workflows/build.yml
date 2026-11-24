@@ -1,0 +1,53 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: data-hmamat-apk
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android scaffold
+        run: |
+          flutter create --org com.roga --project-name data_hmamat --platforms android .
+          rm -rf test
+      - name: Patch manifest (permissions + app name)
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i '0,/<application/s//<uses-permission android:name="android.permission.CAMERA"\/>\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"\/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"\/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"\/>\n    <application/' $M
+          sed -i 's/android:label="[^"]*"/android:label="Data Hmamat"/' $M
+      - name: Make launcher icon
+        run: |
+          sudo apt-get update && sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 1024 -h 1024 assets/logo.svg -o assets/icon.png
+      - name: Configure release signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bash scripts/configure-signing.sh
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: dart run flutter_launcher_icons
+      - name: Build APK
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-hmamat-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
