@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -16,13 +15,6 @@ abstract final class Notifications {
 
   static Future<void> init() async {
     tzdata.initializeTimeZones();
-    try {
-      final name = await FlutterTimezone.getLocalTimezone();
-      if (name.isNotEmpty) tz.setLocalLocation(tz.getLocation(name));
-    } catch (_) {
-      // يبقى التوقيت UTC إذا تعذّر قراءة منطقة الجهاز.
-    }
-
     const settings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
     );
@@ -44,16 +36,24 @@ abstract final class Notifications {
     final store = Store.instance;
     if (!store.notificationsEnabled || store.dueBirds.isEmpty) return;
 
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
+    // نحسب وقت الجهاز المحلي ثم نحوله إلى UTC، فلا نحتاج إضافة أصلية للمنطقة الزمنية.
+    final deviceNow = DateTime.now();
+    final target = DateTime(
+      deviceNow.year,
+      deviceNow.month,
+      deviceNow.day,
       store.notificationHour,
       store.notificationMinute,
+    ).subtract(deviceNow.timeZoneOffset);
+    var scheduled = tz.TZDateTime.utc(
+      target.year,
+      target.month,
+      target.day,
+      target.hour,
+      target.minute,
     );
-    if (!scheduled.isAfter(now)) {
+    final nowUtc = tz.TZDateTime.now(tz.UTC);
+    if (!scheduled.isAfter(nowUtc)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
 
@@ -104,7 +104,7 @@ abstract final class Notifications {
     try {
       await plugin.show(
         911,
-        L.isAr ? 'Data Hmamat' : 'Data Hmamat',
+        'Data Hmamat',
         L.isAr ? 'التنبيهات تعمل بشكل صحيح' : 'Notifications are working',
         details,
       );
