@@ -195,6 +195,13 @@ abstract final class S {
   static String get share => ar ? 'مشاركة' : 'Share';
   static String get imageSaved => ar ? 'حُفظت الصورة' : 'Image saved';
   static String get pdfReport => ar ? 'تقرير PDF' : 'PDF report';
+  static String get familyTree => ar ? 'شجرة العائلة' : 'Family tree';
+  static String get partnersChildren => ar ? 'الأزواج والأبناء' : 'Mates and offspring';
+  static String get tapToOpen => ar ? 'اضغط على أي طير لفتح شجرته' : 'Tap any bird to open its tree';
+  static String get risk => ar ? 'مستوى الخطر' : 'Risk level';
+  static String get riskLow => ar ? 'منخفض' : 'Low';
+  static String get riskMid => ar ? 'متوسط' : 'Medium';
+  static String get riskHigh => ar ? 'مرتفع' : 'High';
   static String get pedigreePdf => ar ? 'تقرير النسب PDF' : 'Pedigree PDF';
   static String get pdfReady => ar ? 'جاهز للمشاركة' : 'Ready to share';
 

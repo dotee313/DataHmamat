@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'family_tree.dart';
 import 'l10n.dart';
 import 'models.dart';
 import 'pdf_export.dart';
@@ -73,6 +74,32 @@ class _PedigreePageState extends State<PedigreePage> {
         ),
         const SizedBox(height: 16),
         SectionCard(
+          title: S.familyTree,
+          icon: Icons.family_restroom_outlined,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                S.tapToOpen,
+                style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+              ),
+              const SizedBox(height: 12),
+              CoupleTree(
+                father: Store.instance.find(selected.fatherId),
+                mother: Store.instance.find(selected.motherId),
+                children: _siblings(selected),
+                highlightId: selected.id,
+                onTap: (b) => setState(() => _selected = b.id),
+              ),
+            ],
+          ),
+        ),
+        SectionCard(
+          title: S.partnersChildren,
+          icon: Icons.child_care_outlined,
+          child: _offspring(selected),
+        ),
+        SectionCard(
           title: S.bilateral,
           icon: Icons.account_tree_outlined,
           trailing: DropdownButton<int>(
@@ -141,27 +168,24 @@ class _PedigreePageState extends State<PedigreePage> {
                 onChanged: (v) => setState(() => _other = v),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 16,
-                runSpacing: 8,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _metric(
-                    S.relationValue,
-                    relation == null ? '—' : '${(relation * 100).toStringAsFixed(1)} %',
+                  RingGauge(
+                    label: S.relationValue,
+                    value: relation,
+                    color: AppTheme.purple,
                   ),
-                  _metric(
-                    S.inbreeding,
-                    '${(inbreeding * 100).toStringAsFixed(1)} %',
+                  RingGauge(
+                    label: S.inbreeding,
+                    value: inbreeding,
+                    color: _riskColor(inbreeding),
+                    caption: _riskText(inbreeding),
                   ),
                 ],
               ),
             ],
           ),
-        ),
-        SectionCard(
-          title: S.children,
-          icon: Icons.child_care_outlined,
-          child: _children(selected.id),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -268,55 +292,67 @@ class _PedigreePageState extends State<PedigreePage> {
     );
   }
 
-  Widget _children(String id) {
-    final children =
-        Store.instance.birds.where((b) => b.fatherId == id || b.motherId == id).toList();
-    if (children.isEmpty) {
+  Color _riskColor(double v) {
+    if (v < 0.0625) return const Color(0xFF2E9E5B);
+    if (v < 0.125) return AppTheme.gold;
+    return const Color(0xFFD64545);
+  }
+
+  String _riskText(double v) {
+    final t = v < 0.0625 ? S.riskLow : (v < 0.125 ? S.riskMid : S.riskHigh);
+    return '${S.risk}: $t';
+  }
+
+  /// الإخوة الأشقاء (نفس الأب ونفس الأم) مع الطير نفسه.
+  List<Bird> _siblings(Bird b) {
+    if (b.fatherId == null && b.motherId == null) return <Bird>[b];
+    final list = Store.instance.birds
+        .where((x) => x.fatherId == b.fatherId && x.motherId == b.motherId)
+        .toList();
+    if (!list.any((x) => x.id == b.id)) list.add(b);
+    list.sort((a, c) => a.bornOn.compareTo(c.bornOn));
+    return list;
+  }
+
+  /// لكل شريك: زوجان وأبناؤهما.
+  Widget _offspring(Bird me) {
+    final kids = Store.instance.birds
+        .where((b) => b.fatherId == me.id || b.motherId == me.id)
+        .toList();
+    if (kids.isEmpty) {
       return Text(
         S.noChildren,
         style: const TextStyle(fontSize: 12, color: AppTheme.muted),
       );
     }
+    final groups = <String, List<Bird>>{};
+    for (final k in kids) {
+      final asFather = k.fatherId == me.id;
+      final other = asFather ? k.motherId : k.fatherId;
+      groups.putIfAbsent('${asFather ? 'f' : 'm'}|${other ?? ''}', () => <Bird>[]).add(k);
+    }
     return Column(
       children: [
-        for (final child in children)
-          ListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              child.fatherId == id ? Icons.male_outlined : Icons.female_outlined,
-              size: 18,
-              color: child.fatherId == id ? AppTheme.purple : AppTheme.gold,
-            ),
-            title: Text(child.name),
-            subtitle: Text(child.kind),
-            onTap: () => setState(() => _selected = child.id),
+        for (final e in groups.entries)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _group(me, e.key, e.value),
           ),
       ],
     );
   }
 
-  Widget _metric(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.purple.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(fontSize: 10, color: AppTheme.muted)),
-          const SizedBox(height: 2),
-          Text(value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.purple,
-              )),
-        ],
-      ),
+  Widget _group(Bird me, String key, List<Bird> kids) {
+    final asFather = key.startsWith('f');
+    final otherId = key.substring(2);
+    final other = otherId.isEmpty ? null : Store.instance.find(otherId);
+    kids.sort((a, c) => a.bornOn.compareTo(c.bornOn));
+    return CoupleTree(
+      father: asFather ? me : other,
+      mother: asFather ? other : me,
+      children: kids,
+      highlightId: me.id,
+      onTap: (b) => setState(() => _selected = b.id),
     );
   }
 }
