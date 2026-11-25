@@ -1,53 +1,66 @@
 import 'package:flutter/material.dart';
 
-/// هوية بصرية هادئة ونظيفة: بنفسجي وذهبي، متوافقة مع الشعار.
+/// هوية موحّدة: بنفسجي الشعار، ذهبي، وكحلي.
 abstract final class AppTheme {
-  static const Color green = Color(0xFF8338EC);
-  static const Color greenDark = Color(0xFF14213D);
+  static const Color purple = Color(0xFF8338EC);
+  static const Color purpleDark = Color(0xFF5B21B6);
   static const Color gold = Color(0xFFFCA311);
+  static const Color navy = Color(0xFF14213D);
+
   static const Color canvas = Color(0xFFF7F7FB);
   static const Color card = Colors.white;
-  static const Color ink = Color(0xFF14213D);
+  static const Color ink = navy;
   static const Color muted = Color(0xFF667085);
   static const Color line = Color(0xFFE4E7EC);
 
-  static ThemeData light() {
+  static const Color darkCanvas = Color(0xFF0E1624);
+  static const Color darkCard = Color(0xFF17253B);
+  static const Color darkInk = Color(0xFFF4F6FB);
+  static const Color darkMuted = Color(0xFFA9B4C6);
+  static const Color darkLine = Color(0xFF26364F);
+
+  static ThemeData light() => _build(Brightness.light);
+  static ThemeData dark() => _build(Brightness.dark);
+
+  static ThemeData _build(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
     final scheme = ColorScheme.fromSeed(
-      seedColor: green,
-      primary: green,
+      seedColor: purple,
+      primary: purple,
       secondary: gold,
-      surface: card,
+      surface: isDark ? darkCard : card,
       error: const Color(0xFFB3261E),
+      brightness: brightness,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: canvas,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: canvas,
-        foregroundColor: ink,
+      scaffoldBackgroundColor: isDark ? darkCanvas : canvas,
+      appBarTheme: AppBarTheme(
+        backgroundColor: isDark ? darkCanvas : canvas,
+        foregroundColor: isDark ? darkInk : ink,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
-          color: ink,
+          color: isDark ? darkInk : ink,
           fontSize: 20,
           fontWeight: FontWeight.w700,
         ),
       ),
       cardTheme: CardThemeData(
-        color: card,
+        color: isDark ? darkCard : card,
         elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: line),
+          side: BorderSide(color: isDark ? darkLine : line),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFF1F3F0),
+        fillColor: isDark ? const Color(0xFF213149) : const Color(0xFFF1F3F8),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
@@ -60,12 +73,12 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: green, width: 1.5),
+          borderSide: const BorderSide(color: purple, width: 1.5),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: green,
+          backgroundColor: purple,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(50),
           shape: RoundedRectangleBorder(
@@ -76,28 +89,36 @@ abstract final class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: green,
+          foregroundColor: isDark ? darkInk : purple,
           minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: line),
+          side: BorderSide(color: isDark ? darkLine : line),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: card,
+        backgroundColor: isDark ? darkCard : card,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: green.withValues(alpha: 0.12),
+        indicatorColor: purple.withValues(alpha: 0.16),
         labelTextStyle: WidgetStateProperty.all(
-          const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: line, space: 1),
+      dividerTheme: DividerThemeData(color: isDark ? darkLine : line, space: 1),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: greenDark,
+        backgroundColor: navy,
         contentTextStyle: const TextStyle(color: Colors.white),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: isDark ? darkCard : card,
+        titleTextStyle: TextStyle(
+          color: isDark ? darkInk : ink,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

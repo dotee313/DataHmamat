@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'l10n.dart';
 import 'models.dart';
 import 'storage.dart';
 
@@ -59,7 +60,7 @@ class _BirdFormPageState extends State<BirdFormPage> {
       initialDate: _bornOn,
       firstDate: DateTime(1990),
       lastDate: DateTime.now(),
-      helpText: 'تاريخ الولادة أو الشراء',
+      helpText: S.bornOn,
     );
     if (picked != null) setState(() => _bornOn = picked);
   }
@@ -88,12 +89,11 @@ class _BirdFormPageState extends State<BirdFormPage> {
       reminders: _reminders,
     );
 
-    await Store.instance.upsert(bird);
+    await Store.instance.upsertBird(bird);
     if (!mounted) return;
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(old == null ? 'أُضيف الطير' : 'حُفظت التعديلات')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(S.saved)));
   }
 
   @override
@@ -103,9 +103,7 @@ class _BirdFormPageState extends State<BirdFormPage> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.bird == null ? 'طير جديد' : 'تعديل بيانات الطير'),
-      ),
+      appBar: AppBar(title: Text(widget.bird == null ? S.addBird : S.editBird)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -113,70 +111,52 @@ class _BirdFormPageState extends State<BirdFormPage> {
           children: [
             _field(
               controller: _name,
-              label: 'اسم الطير',
+              label: S.name,
               icon: Icons.pets_outlined,
               validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'اكتب اسماً للطير' : null,
+                  (v == null || v.trim().isEmpty) ? S.name : null,
             ),
             const SizedBox(height: 12),
-            _field(
-              controller: _kind,
-              label: 'النوع / السلالة',
-              icon: Icons.category_outlined,
-            ),
+            _field(controller: _kind, label: S.kind, icon: Icons.category_outlined),
             const SizedBox(height: 12),
-            _field(
-              controller: _color,
-              label: 'اللون',
-              icon: Icons.palette_outlined,
-            ),
+            _field(controller: _color, label: S.color, icon: Icons.palette_outlined),
             const SizedBox(height: 12),
-            _field(
-              controller: _ring,
-              label: 'رقم السولة / الحلقة',
-              icon: Icons.numbers_outlined,
-            ),
+            _field(controller: _ring, label: S.ring, icon: Icons.numbers_outlined),
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _sex,
-                    decoration: const InputDecoration(
-                      labelText: 'الجنس',
-                      prefixIcon: Icon(Icons.male_outlined),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'ذكر', child: Text('ذكر')),
-                      DropdownMenuItem(value: 'أنثى', child: Text('أنثى')),
-                    ],
-                    onChanged: (v) => setState(() => _sex = v ?? 'ذكر'),
-                  ),
-                ),
+            DropdownButtonFormField<String>(
+              initialValue: _sex,
+              decoration: InputDecoration(
+                labelText: S.sex,
+                prefixIcon: const Icon(Icons.male_outlined),
+              ),
+              items: [
+                DropdownMenuItem<String>(value: 'ذكر', child: Text(S.male)),
+                DropdownMenuItem<String>(value: 'أنثى', child: Text(S.female)),
               ],
+              onChanged: (v) => setState(() => _sex = v ?? 'ذكر'),
             ),
             const SizedBox(height: 12),
             InkWell(
               onTap: _pickDate,
               borderRadius: BorderRadius.circular(14),
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'تاريخ الولادة أو الشراء',
-                  prefixIcon: Icon(Icons.calendar_today_outlined),
+                decoration: InputDecoration(
+                  labelText: S.bornOn,
+                  prefixIcon: const Icon(Icons.calendar_today_outlined),
                 ),
                 child: Text(formatDate(_bornOn)),
               ),
             ),
             const SizedBox(height: 14),
             _parentField(
-              label: 'الأب',
+              label: S.father,
               value: _father,
               candidates: others,
               onChanged: (v) => setState(() => _father = v),
             ),
             const SizedBox(height: 12),
             _parentField(
-              label: 'الأم',
+              label: S.mother,
               value: _mother,
               candidates: others,
               onChanged: (v) => setState(() => _mother = v),
@@ -185,10 +165,10 @@ class _BirdFormPageState extends State<BirdFormPage> {
             TextFormField(
               controller: _cv,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'السيرة الذاتية للطير (CV)',
+              decoration: InputDecoration(
+                labelText: S.cv,
                 alignLabelWithHint: true,
-                prefixIcon: Icon(Icons.description_outlined),
+                prefixIcon: const Icon(Icons.description_outlined),
               ),
             ),
             const SizedBox(height: 6),
@@ -196,13 +176,13 @@ class _BirdFormPageState extends State<BirdFormPage> {
               contentPadding: EdgeInsets.zero,
               value: _reminders,
               onChanged: (v) => setState(() => _reminders = v),
-              title: const Text('تذكير صورة كل أسبوع'),
-              subtitle: const Text('يظهر شعار في الواجهة عند موعد الصورة'),
+              title: Text(S.reminders),
+              subtitle: Text(S.remindersSub),
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _busy ? null : _submit,
-              child: Text(_busy ? 'جارٍ الحفظ...' : 'حفظ'),
+              child: Text(_busy ? S.save : S.save),
             ),
           ],
         ),
@@ -233,7 +213,7 @@ class _BirdFormPageState extends State<BirdFormPage> {
     required ValueChanged<String?> onChanged,
   }) {
     final items = <DropdownMenuItem<String?>>[
-      const DropdownMenuItem<String?>(value: null, child: Text('لا يوجد')),
+      DropdownMenuItem<String?>(value: null, child: Text(S.none)),
       ...candidates.map(
         (b) => DropdownMenuItem<String?>(value: b.id, child: Text(b.name)),
       ),
