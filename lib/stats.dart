@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'l10n.dart';
 import 'models.dart';
 import 'storage.dart';
+import 'theme.dart';
 import 'widgets.dart';
 
 /// لوحة إحصائيات بصرية مكتوبة بالكامل محلياً من سجلات الجهاز.
