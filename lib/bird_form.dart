@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'l10n.dart';
 import 'models.dart';
 import 'storage.dart';
+import 'theme.dart';
 
 class BirdFormPage extends StatefulWidget {
   const BirdFormPage({super.key, this.bird});
@@ -23,6 +24,9 @@ class _BirdFormPageState extends State<BirdFormPage> {
 
   late String _sex;
   late DateTime _bornOn;
+  late int _birthWeek;
+  late int _birthMonth;
+  late int _birthYear;
   String? _father;
   String? _mother;
   late bool _reminders;
@@ -39,6 +43,9 @@ class _BirdFormPageState extends State<BirdFormPage> {
     _cv.text = b?.cv ?? '';
     _sex = b?.sex ?? 'ذكر';
     _bornOn = b?.bornOn ?? DateTime.now();
+    _birthWeek = _weekOf(_bornOn);
+    _birthMonth = _bornOn.month;
+    _birthYear = _bornOn.year < 1990 ? 1990 : _bornOn.year;
     _father = b?.fatherId;
     _mother = b?.motherId;
     _reminders = b?.reminders ?? true;
@@ -54,15 +61,22 @@ class _BirdFormPageState extends State<BirdFormPage> {
     super.dispose();
   }
 
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _bornOn,
-      firstDate: DateTime(1990),
-      lastDate: DateTime.now(),
-      helpText: S.bornOn,
-    );
-    if (picked != null) setState(() => _bornOn = picked);
+  static int _weekOf(DateTime date) =>
+      ((date.day - 1) ~/ 7).clamp(0, 4).toInt() + 1;
+
+  DateTime _dateFromInputs() {
+    final lastDay = DateTime(_birthYear, _birthMonth + 1, 0).day;
+    final day = ((_birthWeek - 1) * 7 + 1).clamp(1, lastDay).toInt();
+    return DateTime(_birthYear, _birthMonth, day);
+  }
+
+  void _setBirth({int? week, int? month, int? year}) {
+    setState(() {
+      if (week != null) _birthWeek = week;
+      if (month != null) _birthMonth = month;
+      if (year != null) _birthYear = year;
+      _bornOn = _dateFromInputs();
+    });
   }
 
   Future<void> _submit() async {
@@ -136,16 +150,78 @@ class _BirdFormPageState extends State<BirdFormPage> {
               onChanged: (v) => setState(() => _sex = v ?? 'ذكر'),
             ),
             const SizedBox(height: 12),
-            InkWell(
-              onTap: _pickDate,
-              borderRadius: BorderRadius.circular(14),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: S.bornOn,
-                  prefixIcon: const Icon(Icons.calendar_today_outlined),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today_outlined,
+                    size: 18, color: AppTheme.purple),
+                const SizedBox(width: 8),
+                Text(
+                  S.bornOn,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 13),
                 ),
-                child: Text(formatDate(_bornOn)),
-              ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              S.birthHint,
+              style: const TextStyle(fontSize: 10, color: AppTheme.muted),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    initialValue: _birthWeek,
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: S.week),
+                    items: [
+                      for (var i = 1; i <= 5; i++)
+                        DropdownMenuItem<int>(
+                          value: i,
+                          child: Text(
+                            S.weekName(i),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: (v) => _setBirth(week: v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    initialValue: _birthMonth,
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: S.month),
+                    items: [
+                      for (var i = 1; i <= 12; i++)
+                        DropdownMenuItem<int>(
+                          value: i,
+                          child: Text(
+                            S.monthName(i),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: (v) => _setBirth(month: v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    initialValue: _birthYear,
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: S.year),
+                    items: [
+                      for (var y = DateTime.now().year; y >= 1990; y--)
+                        DropdownMenuItem<int>(value: y, child: Text('$y')),
+                    ],
+                    onChanged: (v) => _setBirth(year: v),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             _parentField(

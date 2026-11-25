@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'family_chart.dart';
 import 'family_tree.dart';
 import 'l10n.dart';
 import 'models.dart';
@@ -23,6 +24,7 @@ class _PedigreePageState extends State<PedigreePage> {
   String? _selected;
   String? _other;
   int _generations = 5;
+  int _chartDepth = 3;
 
   Future<void> _sharePdf() async {
     final birds = Store.instance.birds;
@@ -76,22 +78,34 @@ class _PedigreePageState extends State<PedigreePage> {
         SectionCard(
           title: S.familyTree,
           icon: Icons.family_restroom_outlined,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                S.tapToOpen,
-                style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+                S.ancestors,
+                style: const TextStyle(fontSize: 10, color: AppTheme.muted),
               ),
-              const SizedBox(height: 12),
-              CoupleTree(
-                father: Store.instance.find(selected.fatherId),
-                mother: Store.instance.find(selected.motherId),
-                children: _siblings(selected),
-                highlightId: selected.id,
-                onTap: (b) => setState(() => _selected = b.id),
+              const SizedBox(width: 4),
+              DropdownButton<int>(
+                value: _chartDepth,
+                items: const [
+                  DropdownMenuItem<int>(value: 2, child: Text('2')),
+                  DropdownMenuItem<int>(value: 3, child: Text('3')),
+                  DropdownMenuItem<int>(value: 4, child: Text('4')),
+                  DropdownMenuItem<int>(value: 5, child: Text('5')),
+                ],
+                onChanged: (v) => setState(() => _chartDepth = v ?? 3),
               ),
             ],
+          ),
+          child: SizedBox(
+            height: 420,
+            child: FamilyChartView(
+              focus: selected,
+              byId: byId,
+              depth: _chartDepth,
+              onSelect: (id) => setState(() => _selected = id),
+            ),
           ),
         ),
         SectionCard(
@@ -301,17 +315,6 @@ class _PedigreePageState extends State<PedigreePage> {
   String _riskText(double v) {
     final t = v < 0.0625 ? S.riskLow : (v < 0.125 ? S.riskMid : S.riskHigh);
     return '${S.risk}: $t';
-  }
-
-  /// الإخوة الأشقاء (نفس الأب ونفس الأم) مع الطير نفسه.
-  List<Bird> _siblings(Bird b) {
-    if (b.fatherId == null && b.motherId == null) return <Bird>[b];
-    final list = Store.instance.birds
-        .where((x) => x.fatherId == b.fatherId && x.motherId == b.motherId)
-        .toList();
-    if (!list.any((x) => x.id == b.id)) list.add(b);
-    list.sort((a, c) => a.bornOn.compareTo(c.bornOn));
-    return list;
   }
 
   /// لكل شريك: زوجان وأبناؤهما.

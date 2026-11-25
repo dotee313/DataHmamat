@@ -36,6 +36,26 @@ abstract final class S {
   static String get female => ar ? 'أنثى' : 'Female';
   static String get ring => ar ? 'رقم الحلقة' : 'Ring number';
   static String get bornOn => ar ? 'تاريخ الولادة أو الشراء' : 'Born / purchased on';
+  static String get week => ar ? 'الأسبوع' : 'Week';
+  static String get month => ar ? 'الشهر' : 'Month';
+  static String get year => ar ? 'السنة' : 'Year';
+  static String get birthHint => ar
+      ? 'اختر الأسبوع من الشهر ثم الشهر ثم السنة. يُحفظ التاريخ تلقائياً.'
+      : 'Choose the week of the month, then the month and year. The date is saved automatically.';
+  static String weekName(int n) => ar
+      ? <String>['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس'][(n - 1).clamp(0, 4).toInt()]
+      : <String>['1st', '2nd', '3rd', '4th', '5th'][(n - 1).clamp(0, 4).toInt()];
+  static String monthName(int n) {
+    const ar = <String>[
+      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    ];
+    const en = <String>[
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    return (S.ar ? ar : en)[(n - 1).clamp(0, 11).toInt()];
+  }
   static String get father => ar ? 'الأب' : 'Father';
   static String get mother => ar ? 'الأم' : 'Mother';
   static String get none => ar ? 'لا يوجد' : 'None';
@@ -196,6 +216,14 @@ abstract final class S {
   static String get imageSaved => ar ? 'حُفظت الصورة' : 'Image saved';
   static String get pdfReport => ar ? 'تقرير PDF' : 'PDF report';
   static String get familyTree => ar ? 'شجرة العائلة' : 'Family tree';
+  static String get chartHint => ar
+      ? 'شجرة تفاعلية: اسحب للتحريك، قرّب وبعّد، واضغط على أي بطاقة لتركيز الشجرة عليها.'
+      : 'Interactive chart: drag to pan, pinch or use the buttons to zoom, and tap a card to focus it.';
+  static String get ancestors => ar ? 'الأجيال للأعلى' : 'Ancestor levels';
+  static String get zoomIn => ar ? 'تكبير' : 'Zoom in';
+  static String get zoomOut => ar ? 'تصغير' : 'Zoom out';
+  static String get fitView => ar ? 'ملاءمة الشاشة' : 'Fit to screen';
+  static String get focusBird => ar ? 'الطير المركزي' : 'Focus bird';
   static String get partnersChildren => ar ? 'الأزواج والأبناء' : 'Mates and offspring';
   static String get tapToOpen => ar ? 'اضغط على أي طير لفتح شجرته' : 'Tap any bird to open its tree';
   static String get risk => ar ? 'مستوى الخطر' : 'Risk level';
@@ -226,7 +254,7 @@ abstract final class S {
 }
 
 
-/// العمر بالسنة والشهر والربع (ربع الشهر = أسبوع: أول، ثاني، ثالث، رابع).
+/// العمر بالسنة والشهر والأسبوع داخل الشهر (الأول، الثاني، الثالث، الرابع، الخامس).
 String ageText(DateTime born, [DateTime? now]) {
   final n = now ?? DateTime.now();
   var years = n.year - born.year;
@@ -242,12 +270,12 @@ String ageText(DateTime born, [DateTime? now]) {
     months += 12;
   }
   if (years < 0) return '—';
-  final q = (days ~/ 7).clamp(0, 3) + 1;
+  final w = (days ~/ 7).clamp(0, 4).toInt() + 1;
   final ar = S.ar;
-  const arQ = <String>['الأول', 'الثاني', 'الثالث', 'الرابع'];
+  const arW = <String>['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس'];
   final parts = <String>[];
   if (years > 0) parts.add(ar ? '$years سنة' : '$years y');
   if (months > 0) parts.add(ar ? '$months شهر' : '$months mo');
-  parts.add(ar ? 'الربع ${arQ[q - 1]}' : 'Quarter $q');
+  parts.add(ar ? 'الأسبوع ${arW[w - 1]}' : 'Week $w');
   return parts.join(' • ');
 }
