@@ -166,14 +166,15 @@ class _FamilyChartViewState extends State<FamilyChartView> {
       ));
     }
 
-    final siblings = hasParents
-        ? widget.byId.values
-            .where((b) =>
-                b.fatherId == widget.focus.fatherId &&
-                b.motherId == widget.focus.motherId)
-            .toList()
-          ..sort((a, b) => a.bornOn.compareTo(b.bornOn))
-        : <Bird>[widget.focus];
+    final siblings = <Bird>[];
+    if (hasParents) {
+      siblings.addAll(widget.byId.values.where((b) =>
+          b.fatherId == widget.focus.fatherId &&
+          b.motherId == widget.focus.motherId));
+    } else {
+      siblings.add(widget.focus);
+    }
+    siblings.sort((a, b) => a.bornOn.compareTo(b.bornOn));
     if (!siblings.any((b) => b.id == widget.focus.id)) {
       siblings.add(widget.focus);
       siblings.sort((a, b) => a.bornOn.compareTo(b.bornOn));
