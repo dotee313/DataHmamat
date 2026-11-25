@@ -173,9 +173,44 @@ abstract final class S {
   static String get aboutText => ar
       ? 'سجل الحمامات المحلي. بياناتك ملكك، تبقى على جهازك.'
       : 'Your offline pigeon record. Your data stays on your device.';
-  static String get version => ar ? 'الإصدار 0.2.0' : 'Version 0.2.0';
+  static String get version => ar ? 'الإصدار 0.3.0' : 'Version 0.3.0';
   static String get confirmDelete => ar ? 'تأكيد الحذف؟' : 'Confirm delete?';
   static String get confirmDeleteBody => ar
       ? 'ستُحذف البيانات من الملف المحلي.'
       : 'The record will be removed from the local file.';
+
+  static String get stats => ar ? 'الإحصائيات' : 'Statistics';
+  static String get weightTrend => ar ? 'تطور الوزن' : 'Weight trend';
+  static String get eggProduction => ar ? 'إنتاج البيض' : 'Egg production';
+  static String get monthlyExpenses => ar ? 'المصاريف الشهرية' : 'Monthly expenses';
+  static String get noStats => ar ? 'لا توجد بيانات كافية للرسم' : 'Not enough data to chart';
+  static String get lastSixMonths => ar ? 'آخر ستة أشهر' : 'Last six months';
+
+  static String get idCard => ar ? 'بطاقة التعريف' : 'ID card';
+  static String get qrCard => ar ? 'بطاقة برمز QR' : 'QR ID card';
+  static String get qrHint => ar
+      ? 'احفظ الصورة أو شاركها؛ يمكن طباعتها من المعرض.'
+      : 'Save or share the image; print it from the gallery.';
+  static String get saveImage => ar ? 'حفظ الصورة' : 'Save image';
+  static String get share => ar ? 'مشاركة' : 'Share';
+  static String get imageSaved => ar ? 'حُفظت الصورة' : 'Image saved';
+  static String get pdfReport => ar ? 'تقرير PDF' : 'PDF report';
+  static String get pedigreePdf => ar ? 'تقرير النسب PDF' : 'Pedigree PDF';
+  static String get pdfReady => ar ? 'جاهز للمشاركة' : 'Ready to share';
+
+  static String get calendar => ar ? 'التقويم' : 'Calendar';
+  static String get calendarPage => ar ? 'تقويم المواعيد' : 'Appointment calendar';
+  static String get addEvent => ar ? 'إضافة موعد' : 'Add appointment';
+  static String get eventTitle => ar ? 'عنوان الموعد' : 'Appointment title';
+  static String get eventType => ar ? 'نوع الموعد' : 'Appointment type';
+  static String get customEvent => ar ? 'موعد مخصص' : 'Custom';
+  static String get photoEvent => ar ? 'صورة أسبوعية' : 'Weekly photo';
+  static String get hatchEvent => ar ? 'فقس' : 'Hatching';
+  static String get healthEvent => ar ? 'صحة' : 'Health';
+  static String get noEvents => ar ? 'لا توجد مواعيد في هذا اليوم' : 'No appointments on this day';
+  static String get today => ar ? 'اليوم' : 'Today';
+  static String get eventForBird => ar ? 'الطير المرتبط' : 'Related bird';
+  static String get derivedEvents => ar
+      ? 'تظهر تلقائياً مواعيد الصور والفقس والعلاجات من سجلاتك.'
+      : 'Photo, hatch and health dates appear automatically from your records.';
 }

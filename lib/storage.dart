@@ -21,6 +21,7 @@ class Store {
   final List<FeedItem> _feed = <FeedItem>[];
   final List<HealthRecord> _health = <HealthRecord>[];
   final List<WeightRecord> _weights = <WeightRecord>[];
+  final List<CalendarEvent> _events = <CalendarEvent>[];
 
   List<Bird> get birds => List<Bird>.unmodifiable(_birds);
   List<Clutch> get clutches => List<Clutch>.unmodifiable(_clutches);
@@ -28,6 +29,7 @@ class Store {
   List<FeedItem> get feed => List<FeedItem>.unmodifiable(_feed);
   List<HealthRecord> get health => List<HealthRecord>.unmodifiable(_health);
   List<WeightRecord> get weights => List<WeightRecord>.unmodifiable(_weights);
+  List<CalendarEvent> get events => List<CalendarEvent>.unmodifiable(_events);
 
   Directory? _dir;
   String? folderPath;
@@ -88,6 +90,9 @@ class Store {
     _weights
       ..clear()
       ..addAll(_read<WeightRecord>('weights.json', (j) => WeightRecord.fromJson(j)));
+    _events
+      ..clear()
+      ..addAll(_read<CalendarEvent>('events.json', (j) => CalendarEvent.fromJson(j)));
     _birds.sort((a, b) => a.name.compareTo(b.name));
   }
 
@@ -132,6 +137,7 @@ class Store {
     _clutches.removeWhere((c) => c.motherId == id || c.fatherId == id);
     _health.removeWhere((h) => h.birdId == id);
     _weights.removeWhere((w) => w.birdId == id);
+    _events.removeWhere((e) => e.birdId == id);
     for (final bird in _birds) {
       if (bird.fatherId == id || bird.motherId == id) {
         await upsertBird(bird.copyWith(
@@ -144,6 +150,7 @@ class Store {
     await _write('clutches.json', _clutches);
     await _write('health.json', _health);
     await _write('weights.json', _weights);
+    await _write('events.json', _events);
   }
 
   Future<void> addClutch(Clutch c) async {
@@ -206,6 +213,16 @@ class Store {
   Future<void> removeWeight(String id) async {
     _weights.removeWhere((w) => w.id == id);
     await _write('weights.json', _weights);
+  }
+
+  Future<void> addEvent(CalendarEvent event) async {
+    _events.add(event);
+    await _write('events.json', _events);
+  }
+
+  Future<void> removeEvent(String id) async {
+    _events.removeWhere((e) => e.id == id);
+    await _write('events.json', _events);
   }
 
   Future<String?> chooseFolder() async {
@@ -363,7 +380,7 @@ class Store {
   /// تصدير شامل لكل السجلات داخل ملف واحد.
   Future<String> exportData() async {
     final payload = <String, dynamic>{
-      'version': 2,
+      'version': 3,
       'exportedAt': DateTime.now().toIso8601String(),
       'birds': _birds.map((e) => e.toJson()).toList(),
       'clutches': _clutches.map((e) => e.toJson()).toList(),
@@ -371,6 +388,7 @@ class Store {
       'feed': _feed.map((e) => e.toJson()).toList(),
       'health': _health.map((e) => e.toJson()).toList(),
       'weights': _weights.map((e) => e.toJson()).toList(),
+      'events': _events.map((e) => e.toJson()).toList(),
     };
     final text = jsonEncode(payload);
     final file = File(joinPath(dir.path, 'backup.json'));
@@ -415,12 +433,18 @@ class Store {
       ..addAll(section('weights')
           .whereType<Map>()
           .map((e) => WeightRecord.fromJson(Map<String, dynamic>.from(e))));
+    _events
+      ..clear()
+      ..addAll(section('events')
+          .whereType<Map>()
+          .map((e) => CalendarEvent.fromJson(Map<String, dynamic>.from(e))));
     await saveBirds();
     await _write('clutches.json', _clutches);
     await _write('expenses.json', _expenses);
     await _write('feed.json', _feed);
     await _write('health.json', _health);
     await _write('weights.json', _weights);
+    await _write('events.json', _events);
   }
 
   Future<File?> pickBackupFile() async {

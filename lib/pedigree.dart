@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'l10n.dart';
 import 'models.dart';
+import 'pdf_export.dart';
 import 'storage.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -20,6 +22,20 @@ class _PedigreePageState extends State<PedigreePage> {
   String? _selected;
   String? _other;
   int _generations = 5;
+
+  Future<void> _sharePdf() async {
+    final birds = Store.instance.birds;
+    final selected = Store.instance.find(_selected) ??
+        (birds.isEmpty ? null : birds.first);
+    if (selected == null) return;
+    final path = await PdfExporter.pedigreeReport(selected);
+    await SharePlus.instance.share(
+      ShareParams(
+        files: <XFile>[XFile(path)],
+        subject: S.pedigreePdf,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +162,15 @@ class _PedigreePageState extends State<PedigreePage> {
           title: S.children,
           icon: Icons.child_care_outlined,
           child: _children(selected.id),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _sharePdf,
+            icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+            label: Text(S.pedigreePdf),
+          ),
         ),
       ],
     );

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'bird_form.dart';
+import 'calendar_page.dart';
+import 'cards.dart';
 import 'l10n.dart';
 import 'models.dart';
 import 'notifications.dart';
+import 'pdf_export.dart';
 import 'pedigree.dart';
+import 'stats.dart';
 import 'storage.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -34,6 +39,20 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> _openCalendar() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => CalendarPage(onChanged: _refresh),
+      ),
+    );
+  }
+
+  Future<void> _openStats() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const StatsPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final due = Store.instance.dueBirds.length;
@@ -42,6 +61,16 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(_titles[_index]),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart_rounded),
+            tooltip: S.stats,
+            onPressed: _openStats,
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_month_outlined),
+            tooltip: S.calendar,
+            onPressed: _openCalendar,
+          ),
           if (due > 0)
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 14),
@@ -1262,6 +1291,27 @@ class _BirdDetailPageState extends State<BirdDetailPage> {
     setState(() {});
   }
 
+  Future<void> _openCard() async {
+    final bird = Store.instance.find(widget.birdId);
+    if (bird == null) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => QrCardPage(birdId: bird.id),
+      ),
+    );
+  }
+
+  Future<void> _sharePdf(bool pedigreeOnly) async {
+    final bird = Store.instance.find(widget.birdId);
+    if (bird == null) return;
+    final path = pedigreeOnly
+        ? await PdfExporter.pedigreeReport(bird)
+        : await PdfExporter.birdReport(bird);
+    await SharePlus.instance.share(
+      ShareParams(files: <XFile>[XFile(path)], subject: S.pdfReport),
+    );
+  }
+
   Future<void> _addWeight() async {
     final grams = TextEditingController();
     final ok = await showDialog<bool>(
@@ -1373,6 +1423,35 @@ class _BirdDetailPageState extends State<BirdDetailPage> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _openCard,
+                  icon: const Icon(Icons.qr_code_2_outlined, size: 18),
+                  label: Text(S.qrCard),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _sharePdf(false),
+                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                  label: Text(S.pdfReport),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _sharePdf(true),
+              icon: const Icon(Icons.family_restroom_outlined, size: 18),
+              label: Text(S.pedigreePdf),
+            ),
           ),
           const SizedBox(height: 8),
           SectionCard(

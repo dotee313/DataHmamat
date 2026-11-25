@@ -313,6 +313,50 @@ class WeightRecord {
       value == null ? null : DateTime.tryParse(value.toString());
 }
 
+class CalendarEvent {
+  String id;
+  String title;
+  DateTime date;
+  String type;
+  String birdId;
+  String note;
+
+  CalendarEvent({
+    required this.id,
+    required this.title,
+    DateTime? date,
+    this.type = 'custom',
+    this.birdId = '',
+    this.note = '',
+  }) : date = date ?? DateTime.now();
+
+  bool get isCustom => type == 'custom';
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'title': title,
+        'date': date.toIso8601String(),
+        'type': type,
+        'birdId': birdId,
+        'note': note,
+      };
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
+        id: (json['id'] ?? '').toString(),
+        title: (json['title'] ?? '').toString(),
+        date: _eventDate(json['date']) ?? DateTime.now(),
+        type: (json['type'] ?? 'custom').toString(),
+        birdId: (json['birdId'] ?? '').toString(),
+        note: (json['note'] ?? '').toString(),
+      );
+
+  static DateTime? _eventDate(dynamic value) =>
+      value == null ? null : DateTime.tryParse(value.toString());
+}
+
+bool sameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
 String formatDate(DateTime? date) {
   if (date == null) return '—';
   return '${date.day}/${date.month}/${date.year}';
