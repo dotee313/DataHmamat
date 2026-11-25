@@ -598,6 +598,7 @@ class _EggsPageState extends State<EggsPage> {
     final totalEggs = clutches.fold<int>(0, (s, c) => s + c.eggsCount);
     final totalHatched = clutches.fold<int>(0, (s, c) => s + c.hatchedCount);
     final rate = totalEggs == 0 ? 0.0 : totalHatched * 100 / totalEggs;
+    final rateText = rate.toStringAsFixed(1);
 
     return Stack(
       children: [
@@ -608,7 +609,7 @@ class _EggsPageState extends State<EggsPage> {
               title: S.hatchSuccess,
               icon: Icons.egg_outlined,
               child: Text(
-                '${rate.toStringAsFixed(1)} %  (${totalHatched}/${totalEggs})',
+                '$rateText %  ($totalHatched/$totalEggs)',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,

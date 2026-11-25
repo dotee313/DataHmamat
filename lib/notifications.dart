@@ -45,11 +45,13 @@ abstract final class Notifications {
     if (!store.notificationsEnabled || store.dueBirds.isEmpty) return;
 
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = now.replace(
-      hour: store.notificationHour,
-      minute: store.notificationMinute,
-      second: 0,
-      millisecond: 0,
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      store.notificationHour,
+      store.notificationMinute,
     );
     if (!scheduled.isAfter(now)) {
       scheduled = scheduled.add(const Duration(days: 1));

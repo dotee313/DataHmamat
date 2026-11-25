@@ -424,12 +424,13 @@ class Store {
   }
 
   Future<File?> pickBackupFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final picked = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: <String>['json'],
       dialogTitle: S.import,
     );
-    final path = result?.files.single.path;
+    if (picked.isEmpty) return null;
+    final path = picked.first.path;
     return path == null ? null : File(path);
   }
 
