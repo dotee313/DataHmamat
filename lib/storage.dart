@@ -45,19 +45,35 @@ class Store {
   Directory get dir => _dir ?? Directory.systemTemp;
 
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    folderPath = prefs.getString('folder_path');
-    postponeDays = prefs.getInt('postpone_days') ?? 2;
-    notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    notificationHour = prefs.getInt('notification_hour') ?? 8;
-    notificationMinute = prefs.getInt('notification_minute') ?? 0;
-    themeMode = _themeMode(prefs.getString('theme_mode'));
-    themeListenable.value = themeMode;
-    final lang = prefs.getString('language');
-    L.locale = Locale(lang == 'en' ? 'en' : 'ar');
-    localeListenable.value = L.locale;
-    _dir = await _resolve(folderPath);
-    await load();
+    // كل خطوة محمية بشكل مستقل: فشل أي جزء لا يمنع ظهور الواجهة.
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      folderPath = prefs.getString('folder_path');
+      postponeDays = prefs.getInt('postpone_days') ?? 2;
+      notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      notificationHour = prefs.getInt('notification_hour') ?? 8;
+      notificationMinute = prefs.getInt('notification_minute') ?? 0;
+      themeMode = _themeMode(prefs.getString('theme_mode'));
+      themeListenable.value = themeMode;
+      final lang = prefs.getString('language');
+      L.locale = Locale(lang == 'en' ? 'en' : 'ar');
+      localeListenable.value = L.locale;
+    } catch (_) {
+      lastError = 'تعذّر قراءة الإعدادات، تُستخدم الإعدادات الافتراضية';
+    }
+
+    try {
+      _dir = await _resolve(folderPath);
+    } catch (_) {
+      _dir = Directory.systemTemp;
+      lastError = 'تعذّر فتح مجلد الحفظ، يُستخدم مجلد التطبيق المؤقت';
+    }
+
+    try {
+      await load();
+    } catch (_) {
+      lastError = 'تعذّر قراءة السجلات المحلية';
+    }
   }
 
   ThemeMode _themeMode(String? value) {
@@ -293,8 +309,13 @@ class Store {
   }
 
   Future<Directory> _resolve(String? saved) async {
-    final docs = await getApplicationDocumentsDirectory();
-    final fallback = Directory(joinPath(docs.path, 'data_hmamat'));
+    Directory fallback;
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      fallback = Directory(joinPath(docs.path, 'data_hmamat'));
+    } catch (_) {
+      fallback = Directory(joinPath(Directory.systemTemp.path, 'data_hmamat'));
+    }
     if (saved != null && saved.isNotEmpty) {
       final candidate = Directory(saved);
       try {

@@ -173,7 +173,7 @@ abstract final class S {
   static String get aboutText => ar
       ? 'سجل الحمامات المحلي. بياناتك ملكك، تبقى على جهازك.'
       : 'Your offline pigeon record. Your data stays on your device.';
-  static String get version => ar ? 'الإصدار 0.3.0' : 'Version 0.3.0';
+  static String get version => ar ? 'الإصدار 0.3.1' : 'Version 0.3.1';
   static String get confirmDelete => ar ? 'تأكيد الحذف؟' : 'Confirm delete?';
   static String get confirmDeleteBody => ar
       ? 'ستُحذف البيانات من الملف المحلي.'
