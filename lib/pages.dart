@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'bird_form.dart';
 import 'calendar_page.dart';
 import 'cards.dart';
+import 'family_tree.dart';
 import 'l10n.dart';
 import 'models.dart';
 import 'notifications.dart';
@@ -29,8 +30,6 @@ class _HomePageState extends State<HomePage> {
         S.birds,
         S.pedigree,
         S.photos,
-        S.eggs,
-        S.finance,
         S.settings,
       ];
 
@@ -108,8 +107,6 @@ class _HomePageState extends State<HomePage> {
           BirdsPage(onChanged: _refresh),
           PedigreePage(onChanged: _refresh),
           PhotosPage(onChanged: _refresh),
-          EggsPage(onChanged: _refresh),
-          FinancePage(onChanged: _refresh),
           SettingsPage(onChanged: _refresh),
         ],
       ),
@@ -124,11 +121,6 @@ class _HomePageState extends State<HomePage> {
               label: S.pedigree),
           NavigationDestination(
               icon: const Icon(Icons.photo_library_outlined), label: S.photos),
-          NavigationDestination(
-              icon: const Icon(Icons.egg_outlined), label: S.eggs),
-          NavigationDestination(
-              icon: const Icon(Icons.account_balance_wallet_outlined),
-              label: S.finance),
           NavigationDestination(
               icon: const Icon(Icons.settings_outlined), label: S.settings),
         ],
@@ -250,22 +242,14 @@ class _BirdsPageState extends State<BirdsPage> {
                 Card(
                   child: ListTile(
                     onTap: () => _open(bird),
-                    leading: CircleAvatar(
-                      backgroundColor: AppTheme.purple.withValues(alpha: 0.12),
-                      child: Text(
-                        bird.name.isEmpty ? '?' : bird.name[0],
-                        style: const TextStyle(
-                          color: AppTheme.purple,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                    leading: BirdCircle(bird: bird, diameter: 50),
                     title: Text(bird.name,
                         style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(<String>[
                       if (bird.kind.isNotEmpty) bird.kind,
                       if (bird.color.isNotEmpty) bird.color,
                       bird.sex,
+                      ageText(bird.bornOn),
                     ].join(' • ')),
                     trailing: bird.isDue
                         ? const Icon(Icons.photo_camera_outlined,
@@ -996,12 +980,48 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  void _openSection(String title, Widget page) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: Text(title)),
+          body: page,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = Store.instance;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        SectionCard(
+          title: S.moreSections,
+          icon: Icons.apps_rounded,
+          child: Column(
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.egg_outlined, color: AppTheme.purple),
+                title: Text(S.eggsPage),
+                trailing: const Icon(Icons.chevron_left, color: AppTheme.muted),
+                onTap: () =>
+                    _openSection(S.eggsPage, EggsPage(onChanged: widget.onChanged)),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.account_balance_wallet_outlined,
+                    color: AppTheme.purple),
+                title: Text(S.expensesPage),
+                trailing: const Icon(Icons.chevron_left, color: AppTheme.muted),
+                onTap: () => _openSection(
+                    S.expensesPage, FinancePage(onChanged: widget.onChanged)),
+              ),
+            ],
+          ),
+        ),
         SectionCard(
           title: S.folder,
           icon: Icons.folder_outlined,
@@ -1464,6 +1484,7 @@ class _BirdDetailPageState extends State<BirdDetailPage> {
                 InfoRow(label: S.sex, value: bird.sex),
                 InfoRow(label: S.ring, value: bird.ring),
                 InfoRow(label: S.bornOn, value: formatDate(bird.bornOn)),
+                InfoRow(label: S.age, value: ageText(bird.bornOn)),
                 InfoRow(label: S.father, value: father?.name ?? S.unknown),
                 InfoRow(label: S.mother, value: mother?.name ?? S.unknown),
                 InfoRow(

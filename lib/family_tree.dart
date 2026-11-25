@@ -45,6 +45,7 @@ class BirdCircle extends StatelessWidget {
               width: diameter,
               height: diameter,
               fit: BoxFit.cover,
+              cacheWidth: (diameter * 3).round(),
               errorBuilder: (_, __, ___) => _initial(b, color),
             ),
           );

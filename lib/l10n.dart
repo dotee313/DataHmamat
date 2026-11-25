@@ -202,6 +202,9 @@ abstract final class S {
   static String get riskLow => ar ? 'منخفض' : 'Low';
   static String get riskMid => ar ? 'متوسط' : 'Medium';
   static String get riskHigh => ar ? 'مرتفع' : 'High';
+  static String get age => ar ? 'العمر' : 'Age';
+  static String get newborn => ar ? 'حديث الولادة' : 'Newborn';
+  static String get moreSections => ar ? 'أقسام إضافية' : 'More sections';
   static String get pedigreePdf => ar ? 'تقرير النسب PDF' : 'Pedigree PDF';
   static String get pdfReady => ar ? 'جاهز للمشاركة' : 'Ready to share';
 
@@ -220,4 +223,31 @@ abstract final class S {
   static String get derivedEvents => ar
       ? 'تظهر تلقائياً مواعيد الصور والفقس والعلاجات من سجلاتك.'
       : 'Photo, hatch and health dates appear automatically from your records.';
+}
+
+
+/// العمر بالسنة والشهر والربع (ربع الشهر = أسبوع: أول، ثاني، ثالث، رابع).
+String ageText(DateTime born, [DateTime? now]) {
+  final n = now ?? DateTime.now();
+  var years = n.year - born.year;
+  var months = n.month - born.month;
+  var days = n.day - born.day;
+  if (days < 0) {
+    months -= 1;
+    final prevMonthDays = DateTime(n.year, n.month, 0).day;
+    days += prevMonthDays;
+  }
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+  if (years < 0) return '—';
+  final q = (days ~/ 7).clamp(0, 3) + 1;
+  final ar = S.ar;
+  const arQ = <String>['الأول', 'الثاني', 'الثالث', 'الرابع'];
+  final parts = <String>[];
+  if (years > 0) parts.add(ar ? '$years سنة' : '$years y');
+  if (months > 0) parts.add(ar ? '$months شهر' : '$months mo');
+  parts.add(ar ? 'الربع ${arQ[q - 1]}' : 'Quarter $q');
+  return parts.join(' • ');
 }
