@@ -8,9 +8,22 @@ import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Store.instance.init();
-  await Notifications.init();
-  await Notifications.sync();
+  
+  try {
+    // تهيئة المخزن والتخزين المحلي
+    await Store.instance.init();
+  } catch (e) {
+    debugPrint('Error initializing Store: $e');
+  }
+
+  try {
+    // تهيئة الإشعارات والمزامنة بشكل آمن لتجنب الشاشة السوداء عند الفشل
+    await Notifications.init();
+    await Notifications.sync();
+  } catch (e) {
+    debugPrint('Error initializing Notifications: $e');
+  }
+
   runApp(const DataHmamatApp());
 }
 
