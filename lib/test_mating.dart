@@ -21,6 +21,8 @@ class TestMatingPage extends StatefulWidget {
 class _TestMatingPageState extends State<TestMatingPage> {
   String? _first;
   String? _second;
+  List<String> _firstTraits = <String>[];
+  List<String> _secondTraits = <String>[];
 
   List<PhenotypePrediction> _predictions = <PhenotypePrediction>[];
   bool _calculated = false;
@@ -75,12 +77,18 @@ class _TestMatingPageState extends State<TestMatingPage> {
     // التزويج يحتاج ذكراً وأنثى؛ نحدد الأب والأم تلقائياً من الجنس.
     Bird? father;
     Bird? mother;
+    List<String> fatherTraits = <String>[];
+    List<String> motherTraits = <String>[];
     if (sexOf(a) == PigeonSex.male && sexOf(b) == PigeonSex.female) {
       father = a;
       mother = b;
+      fatherTraits = _firstTraits;
+      motherTraits = _secondTraits;
     } else if (sexOf(a) == PigeonSex.female && sexOf(b) == PigeonSex.male) {
       father = b;
       mother = a;
+      fatherTraits = _secondTraits;
+      motherTraits = _firstTraits;
     }
     if (father == null || mother == null) {
       setState(() {
@@ -91,12 +99,15 @@ class _TestMatingPageState extends State<TestMatingPage> {
       return;
     }
 
-    final fatherGenotype = genotypeFor(father);
-    final motherGenotype = genotypeFor(mother);
+    final fatherGenotype =
+        genotypeForParts(sexOf(father), father.color, fatherTraits);
+    final motherGenotype =
+        genotypeForParts(sexOf(mother), mother.color, motherTraits);
     final offspring = cross(fatherGenotype, motherGenotype);
     final ratios = sexRatios(offspring);
     final grouped = summarizeByPhenotype(offspring, limit: 0);
-    final beakLabel = expectedBeak(father, mother).lengthClassAr();
+    final beakLabel =
+        expectedBeakTraits(fatherTraits, motherTraits).lengthClassAr();
 
     setState(() {
       _error = null;
@@ -193,6 +204,67 @@ class _TestMatingPageState extends State<TestMatingPage> {
     );
   }
 
+  Widget _traitsCard(
+    List<String> selected,
+    ValueChanged<List<String>> onChanged,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppTheme.purple.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.purple.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            S.parentTraits,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.purple,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            S.parentTraitsHint,
+            style: const TextStyle(fontSize: 9, color: AppTheme.muted),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 2,
+            children: <Widget>[
+              for (final trait in S.readyTraits)
+                FilterChip(
+                  showCheckmark: false,
+                  selected: selected.contains(trait),
+                  label: Text(
+                    trait,
+                    style: const TextStyle(fontSize: 9),
+                  ),
+                  onSelected: (value) {
+                    final next = List<String>.from(selected);
+                    if (value) {
+                      if (!next.contains(trait)) next.add(trait);
+                    } else {
+                      next.remove(trait);
+                    }
+                    setState(() {
+                      onChanged(next);
+                      _calculated = false;
+                      _error = null;
+                    });
+                  },
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _dropdown(String label, String? value, ValueChanged<String?> onChanged) {
     return DropdownButtonFormField<String>(
       initialValue: value,
@@ -239,6 +311,7 @@ class _TestMatingPageState extends State<TestMatingPage> {
                   _first,
                   (v) => setState(() {
                     _first = v;
+                    _firstTraits = List<String>.from(_resolve(v)?.traits ?? const <String>[]);
                     _calculated = false;
                     _error = null;
                   }),
@@ -248,12 +321,15 @@ class _TestMatingPageState extends State<TestMatingPage> {
                   _first,
                   role: _calculated ? S.father : null,
                 ),
+                const SizedBox(height: 8),
+                _traitsCard(_firstTraits, (v) => _firstTraits = v),
                 const SizedBox(height: 14),
                 _dropdown(
                   S.selectSecondParent,
                   _second,
                   (v) => setState(() {
                     _second = v;
+                    _secondTraits = List<String>.from(_resolve(v)?.traits ?? const <String>[]);
                     _calculated = false;
                     _error = null;
                   }),
@@ -263,6 +339,8 @@ class _TestMatingPageState extends State<TestMatingPage> {
                   _second,
                   role: _calculated ? S.mother : null,
                 ),
+                const SizedBox(height: 8),
+                _traitsCard(_secondTraits, (v) => _secondTraits = v),
                 if (_error != null) ...[
                   const SizedBox(height: 10),
                   Text(

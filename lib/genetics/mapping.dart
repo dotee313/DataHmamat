@@ -12,10 +12,19 @@ PigeonSex sexOf(Bird bird) => (bird.sex == 'أنثى' || bird.sex == 'female')
     ? PigeonSex.female
     : PigeonSex.male;
 
-Genotype genotypeFor(Bird bird) {
-  final builder = GenotypeBuilder(sexOf(bird));
-  _applyColor(builder, bird.color.trim());
-  for (final trait in bird.traits) {
+Genotype genotypeFor(Bird bird) =>
+    genotypeForParts(sexOf(bird), bird.color, bird.traits);
+
+/// اللون يضبط مواقع اللون فقط؛ أما نقش الجناح وبقية الصفات فتؤخذ من
+/// اختيار المستخدم في شاشة التزويج، لأن اللون الواحد قد يكون مشرطاً أو فخارلياً.
+Genotype genotypeForParts(
+  PigeonSex sex,
+  String color,
+  Iterable<String> traits,
+) {
+  final builder = GenotypeBuilder(sex);
+  _applyColor(builder, color.trim());
+  for (final trait in traits) {
     _applyTrait(builder, trait.trim());
   }
   return builder.build();
@@ -49,8 +58,8 @@ void _applyColor(GenotypeBuilder builder, String color) {
       builder.setBoth('e', 'e', 'e');
       break;
     case 'ازرق':
+      // النقش لا يُستنتج من اللون؛ المستخدم يختاره في شاشة التزويج.
       builder.setB('B^+');
-      builder.setBoth('C', '+', '+');
       break;
     case 'رمادي':
       builder.setB('B^+');
@@ -85,15 +94,20 @@ void _applyTrait(GenotypeBuilder builder, String trait) {
       builder.setBoth('C', 'T', '+');
       break;
     case 'مكحكل الراس':
-      builder.setBoth('S', 'S', 'S');
-      break;
     case 'فتيلا الراس':
+      // كلاهما فتيلا في الرأس: موقع Crest (Cr).
       builder.setBoth('Cr', 'Cr', 'Cr');
       break;
     case 'وردة الصدر':
-      builder.setBoth('G', 'G', 'G');
+      // فتيلا/مفتل الصدر: موقع Frill (Fr).
+      builder.setBoth('Fr', 'Fr', 'Fr');
       break;
     case 'مكلش الرجل':
+      // مكلش الرجل = ريش على الرجلين (Foot feathering).
+      builder.setBoth('F', 'F', 'F');
+      break;
+    case 'حافي':
+      // حافي = بلا ريش في القدمين.
       builder.setBoth('F', 'f+', 'f+');
       break;
     default:
@@ -102,14 +116,25 @@ void _applyTrait(GenotypeBuilder builder, String trait) {
   }
 }
 
-double beakScoreFor(Bird bird) {
+double beakScoreForTraits(Iterable<String> traits) {
   var score = 0.0;
-  if (bird.traits.contains('منقار قصير')) score -= 2.0;
-  if (bird.traits.contains('منقار طويل')) score += 2.0;
+  if (traits.contains('منقار قصير')) score -= 2.0;
+  if (traits.contains('منقار طويل')) score += 2.0;
   return score;
 }
 
+double beakScoreFor(Bird bird) => beakScoreForTraits(bird.traits);
+
 /// المنقار صفة متعددة الجينات: متوسط درجتي الأب والأم.
-BeakModel expectedBeak(Bird father, Bird mother) => BeakModel(
-      lengthScore: (beakScoreFor(father) + beakScoreFor(mother)) / 2,
+BeakModel expectedBeakTraits(
+  Iterable<String> fatherTraits,
+  Iterable<String> motherTraits,
+) =>
+    BeakModel(
+      lengthScore: (beakScoreForTraits(fatherTraits) +
+              beakScoreForTraits(motherTraits)) /
+          2,
     );
+
+BeakModel expectedBeak(Bird father, Bird mother) =>
+    expectedBeakTraits(father.traits, mother.traits);

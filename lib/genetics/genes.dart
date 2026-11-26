@@ -94,7 +94,7 @@ final Map<String, Locus> loci = <String, Locus>{
     name: 'Check / Bar / T-pattern',
     description: 'نقش درع الجناح: T > C > + (شريط) > c (بلا شريط).',
     alleles: <String, Allele>{
-      'T': _a('T', 'T-pattern', 'نقش T داكن شبه صلب', 4, 'check داكن'),
+      'T': _a('T', 'T-pattern', 'نقش مكتف داكن شبه صلت', 4, 'check داكن'),
       'C': _a('C', 'Check', 'نقش منقّط / check', 3, 'checker'),
       '+': _a('+', 'Bar (wild type)', 'شريطان أسودان', 2, 'bar'),
       'c': _a('c', 'Barless', 'بلا شرائط', 1, 'barless'),
@@ -121,7 +121,7 @@ final Map<String, Locus> loci = <String, Locus>{
   'e': Locus(
     symbol: 'e',
     name: 'Recessive Red',
-    description: 'أحمر متوارٍ يحجب النقش ويعطي أحمر/كريمي.',
+    description: 'أحمر متنحي يحجب النقش ويعطي أحمر/كريمي.',
     alleles: <String, Allele>{
       'E+': _a('E+', 'Normal', 'تصبغ طبيعي', 2),
       'e': _a('e', 'Recessive Red', 'جسم أحمر/كريمي', 1, 'recessive red / cream'),
@@ -157,7 +157,7 @@ final Map<String, Locus> loci = <String, Locus>{
   'I': Locus(
     symbol: 'I',
     name: 'Ice',
-    description: 'تخفيف جليدي سائد بريش باهت متجمد.',
+    description: 'تخفيف باهت سائد بريش شاحب متجمد.',
     alleles: <String, Allele>{
       'I': _a('I', 'Ice', 'ريش باهت متجمد', 2, 'ice'),
       'i+': _a('i+', 'Normal', 'بلا جليد', 1),

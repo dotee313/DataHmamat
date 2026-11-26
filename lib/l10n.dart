@@ -193,7 +193,7 @@ abstract final class S {
   static String get aboutText => ar
       ? 'سجل الحمامات المحلي. بياناتك ملكك، تبقى على جهازك.'
       : 'Your offline pigeon record. Your data stays on your device.';
-  static String get version => ar ? 'الإصدار 0.6.1' : 'Version 0.6.1';
+  static String get version => ar ? 'الإصدار 0.6.2' : 'Version 0.6.2';
 
   /// الصفات الجاهزة بأسمائها العربية كما كُتبت، بلا تحريف ولا تشكيل.
   static const List<String> readyColors = <String>[
@@ -211,6 +211,7 @@ abstract final class S {
   static const List<String> readyMarks = <String>[
     'مكحكل الراس',
     'مكلش الرجل',
+    'حافي',
     'وردة الصدر',
     'فتيلا الراس',
   ];
@@ -286,8 +287,13 @@ abstract final class S {
   static String get expectedTraits => ar ? 'الصفات المتوقعة' : 'Expected traits';
   static String get traitChance => ar ? 'الاحتمال' : 'Chance';
   static String get testMatingHint => ar
-      ? 'يستخدم نموذج UP-Pigen الوراثي: توريث مرتبط بالجنس ومربع بونيت، والنتيجة احتمالية وليست ضماناً للون الفعلي.'
-      : 'Uses the UP-Pigen model: sex-linked inheritance and Punnett squares; results are probabilities, not guarantees.';
+      ? 'يستخدم نموذج UP-Pigen الوراثي: توريث مرتبط بالجنس ومربع بونيت. اختر صفات كل طير بنفسك، لأن اللون وحده لا يخبرنا إن كان الجناح مشرطاً أم فخارلياً؛ النتيجة احتمالية وليست ضماناً.'
+      : 'Uses the UP-Pigen model: sex-linked inheritance and Punnett squares. Pick each parent\'s traits yourself, since color alone does not tell whether the wing is barred or barless; results are probabilities, not guarantees.';
+  static String get parentTraits =>
+      ar ? 'صفات هذا الطير عند الاختبار' : 'Traits for this parent';
+  static String get parentTraitsHint => ar
+      ? 'اختر ما تراه في اللون: المشرط، محبب، مكتف، فخارلي، وغيرها. اختيارك هنا لا يغيّر بيانات الطير المحفوظة.'
+      : 'Choose what you see in the color: barred, check, T-check, barless, and so on. This does not change the saved bird.';
   static String get chooseTwoParents => ar
       ? 'اختر طيرين أو نوعين مختلفين لحساب الاحتمالات.'
       : 'Choose two different birds or types to calculate chances.';
@@ -303,8 +309,8 @@ abstract final class S {
       ar ? 'نسبة الذكور إلى الإناث' : 'Sex ratio';
   static String get expectedBeak => ar ? 'المنقار المتوقع' : 'Expected beak';
   static String get approximateMapping => ar
-      ? 'تُترجم الألوان والصفات إلى تراكيب جينية تقريبية وفق نموذج UP-Pigen؛ النتائج احتمالية وليست ضماناً.'
-      : 'Colors and traits are mapped to approximate genotypes using UP-Pigen; results are probabilities, not guarantees.';
+      ? 'اللون يُترجم إلى مواقع اللون فقط، أما الصفات فتؤخذ من اختيارك في هذه الشاشة. كل ذلك تقريب وفق نموذج UP-Pigen، والنتائج احتمالية وليست ضماناً.'
+      : 'Color maps to color loci only; traits come from your choices in this screen. Both are approximations under UP-Pigen, and results are probabilities, not guarantees.';
   static String resultCount(int n) =>
       ar ? 'عدد النتائج المختلفة: $n' : '$n distinct results';
   static String get confirmDelete => ar ? 'تأكيد الحذف؟' : 'Confirm delete?';

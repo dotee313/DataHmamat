@@ -57,7 +57,7 @@ final List<Mutation> mutations = <Mutation>[
     locus: 'C',
     allele: 'T',
     inheritance: 'dominant over check',
-    description: 'نقش T داكن شبه صلب.',
+    description: 'نقش مكتف داكن شبه صلت.',
   ),
   const Mutation(
     name: 'Barless',
@@ -111,7 +111,7 @@ final List<Mutation> mutations = <Mutation>[
     locus: 'I',
     allele: 'I',
     inheritance: 'autosomal dominant',
-    description: 'تخفيف جليدي بريش باهت.',
+    description: 'تخفيف باهت بريش شاحب.',
     breeds: <String>['Ice Pigeon'],
   ),
   const Mutation(

@@ -53,14 +53,14 @@ class Phenotype {
 
   /// وصف مختصر بالعربية للعرض في نتائج التزويج الاختباري.
   String describeAr() {
-    final bits = <String>[_colorAr(baseColor), _patternAr(pattern)];
-    if (spread) bits.add('منتشر');
+    final bits = <String>[_colorAr(baseColor)];
+    final patternAr = _patternAr(pattern);
+    if (patternAr.isNotEmpty) bits.add(patternAr);
     if (dilute) bits.add('مخفّف');
-    if (recessiveRed) bits.add('أحمر متوارٍ');
     if (grizzle) bits.add('مبرقش');
     if (pied) bits.add('أبرق');
     if (almond) bits.add('لوزي');
-    if (ice) bits.add('جليدي');
+    if (ice) bits.add('باهت');
     if (milky) bits.add('حليبي');
     for (final structure in featherStructure) {
       bits.add(_structureAr(structure));
@@ -88,13 +88,13 @@ class Phenotype {
   static String _colorAr(String value) {
     switch (value) {
       case 'Ash-red':
-        return 'أش ريد';
+        return 'احمر';
       case 'Blue/black (wild type)':
         return 'أزرق';
       case 'Brown':
         return 'جوزي';
       case 'recessive red':
-        return 'أحمر';
+        return 'احمر متنحي';
       default:
         return value;
     }
@@ -103,17 +103,18 @@ class Phenotype {
   static String _patternAr(String value) {
     switch (value) {
       case 'T-pattern':
-        return 'نقش T';
+        return 'مكتف';
       case 'Check':
-        return 'نقاط';
+        return 'محبب';
       case 'Bar (wild type)':
-        return 'شريط';
+        return 'المشرط';
       case 'Barless':
-        return 'صافي';
+        return 'فخارلي';
       case 'masked':
-        return 'مخفي';
+        // الاحمر المتنحي يحجب النقش، واللون وحده يعبّر عنه.
+        return '';
       case 'solid':
-        return 'صلب';
+        return 'صلت';
       default:
         return value;
     }
@@ -122,11 +123,11 @@ class Phenotype {
   static String _structureAr(String value) {
     switch (value) {
       case 'frilled':
-        return 'مجعّد';
+        return 'مفتل';
       case 'crested':
         return 'فتيلا الرأس';
       case 'foot-feathered':
-        return 'مكسو الرجل';
+        return 'مكلش';
       default:
         return value;
     }
