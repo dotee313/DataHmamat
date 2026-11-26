@@ -193,7 +193,7 @@ abstract final class S {
   static String get aboutText => ar
       ? 'سجل الحمامات المحلي. بياناتك ملكك، تبقى على جهازك.'
       : 'Your offline pigeon record. Your data stays on your device.';
-  static String get version => ar ? 'الإصدار 0.6.0' : 'Version 0.6.0';
+  static String get version => ar ? 'الإصدار 0.6.1' : 'Version 0.6.1';
 
   /// الصفات الجاهزة بأسمائها العربية كما كُتبت، بلا تحريف ولا تشكيل.
   static const List<String> readyColors = <String>[

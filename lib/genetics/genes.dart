@@ -49,8 +49,9 @@ class Locus {
     for (final allele in alleles.values) {
       if (allele.symbol == '+' || allele.symbol.endsWith('+')) return allele;
     }
-    return alleles.values.reduce(
-      (a, b) => a.dominance < b.dominance ? a : b,
+    // كإصدار UP-Pigen المحدّث: لا نخترع نمطاً برياً؛ يجب تسميته "+" أو "*+".
+    throw ArgumentError(
+      'الموقع $symbol لا يملك آليل "+"; النمط البري يجب أن يُسمّى صراحةً.',
     );
   }
 

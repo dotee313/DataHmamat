@@ -32,21 +32,49 @@ class PhenotypePrediction {
   final PigeonSex sex;
 }
 
-String _keyOf(List<String> alleles) =>
-    (List<String>.from(alleles)..sort()).join('/');
+int _rank(Locus locus, String allele) {
+  try {
+    return locus.get(allele).dominance;
+  } on ArgumentError {
+    // الآليل غير المسجّل يحتفظ بترتيبه الأصلي كما في UP-Pigen.
+    return 0;
+  }
+}
+
+/// ترتيب زوج الآليلات بالسيادة: الأقوى أولاً، مع ثبات ترتيب المتساويات.
+List<String> _dominanceSort(String locusSymbol, List<String> alleles) {
+  Locus? locus;
+  try {
+    locus = getLocus(locusSymbol);
+  } on ArgumentError {
+    return List<String>.from(alleles);
+  }
+  final indexes = List<int>.generate(alleles.length, (i) => i);
+  indexes.sort((i, j) {
+    final byDominance = _rank(locus!, alleles[j]).compareTo(_rank(locus, alleles[i]));
+    return byDominance != 0 ? byDominance : i.compareTo(j);
+  });
+  return <String>[for (final i in indexes) alleles[i]];
+}
+
+String _keyOf(String locusSymbol, List<String> alleles) =>
+    _dominanceSort(locusSymbol, alleles).join('/');
 
 List<List<List<String>>> punnettSquare(
   List<String> fatherAlleles,
-  List<String> motherAlleles,
-) =>
+  List<String> motherAlleles, {
+  String locusSymbol = 'B',
+}) =>
     <List<List<String>>>[
       for (final fa in fatherAlleles)
         <List<String>>[
-          for (final ma in motherAlleles) _keyOf(<String>[fa, ma]).split('/'),
+          for (final ma in motherAlleles)
+            _keyOf(locusSymbol, <String>[fa, ma]).split('/'),
         ],
     ];
 
 Map<String, double> _outcomes(
+  String locusSymbol,
   List<String> fatherAlleles,
   List<String> motherAlleles, {
   required bool hemizygous,
@@ -61,7 +89,7 @@ Map<String, double> _outcomes(
   }
   for (final fa in fatherAlleles) {
     for (final ma in motherAlleles) {
-      final key = _keyOf(<String>[fa, ma]);
+      final key = _keyOf(locusSymbol, <String>[fa, ma]);
       result[key] = (result[key] ?? 0) +
           1 / (fatherAlleles.length * motherAlleles.length);
     }
@@ -129,6 +157,7 @@ List<Offspring> cross(Genotype father, Genotype mother) {
         ? List<String>.filled(2, locus.wildType.symbol)
         : mother.get(symbol);
     autoOutcomes[symbol] = _outcomes(
+      symbol,
       fatherAlleles,
       motherAlleles,
       hemizygous: false,
@@ -148,6 +177,7 @@ List<Offspring> cross(Genotype father, Genotype mother) {
           ? <String>[locus.wildType.symbol]
           : mother.get(symbol);
       perLocus[symbol] = _outcomes(
+        symbol,
         fatherAlleles,
         motherAlleles,
         hemizygous: sex == PigeonSex.female,

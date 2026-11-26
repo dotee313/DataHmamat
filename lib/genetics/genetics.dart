@@ -9,3 +9,4 @@ export 'mapping.dart';
 export 'mutations.dart';
 export 'phenotype.dart';
 export 'traits.dart';
+export 'validation.dart';
