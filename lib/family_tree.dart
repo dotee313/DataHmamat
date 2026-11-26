@@ -97,8 +97,32 @@ class BirdCircle extends StatelessWidget {
       ),
       child: _content(color),
     );
-    if (onTap == null || bird == null) return circle;
-    return GestureDetector(onTap: onTap, child: circle);
+    final decorated = Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        circle,
+        if (bird != null && !bird.alive)
+          Positioned(
+            right: -1,
+            bottom: -1,
+            child: Container(
+              width: diameter * 0.32,
+              height: diameter * 0.32,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD64545),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.heart_broken_outlined,
+                size: diameter * 0.18,
+                color: Colors.white,
+              ),
+            ),
+          ),
+      ],
+    );
+    if (onTap == null || bird == null) return decorated;
+    return GestureDetector(onTap: onTap, child: decorated);
   }
 }
 
@@ -123,7 +147,7 @@ class CoupleTree extends StatelessWidget {
   static const double _slot = 92;
   static const double _parentD = 68;
   static const double _childD = 58;
-  static const double _labelH = 34;
+  static const double _labelH = 48;
   static const double _parentOffset = 62;
   static const double _busY = 118;
   static const double _childTop = 150;
@@ -135,19 +159,34 @@ class CoupleTree extends StatelessWidget {
       height: _labelH,
       child: Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          bird?.name ?? S.notRegistered,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            height: 1.15,
-            fontWeight: bird == null ? FontWeight.w400 : FontWeight.w700,
-            color: bird == null
-                ? AppTheme.muted
-                : (hl ? birdColor(bird) : ink),
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              bird?.name ?? S.notRegistered,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.15,
+                fontWeight: bird == null ? FontWeight.w400 : FontWeight.w700,
+                color: bird == null
+                    ? AppTheme.muted
+                    : (hl ? birdColor(bird) : ink),
+              ),
+            ),
+            if (bird != null)
+              Text(
+                bird.alive ? S.alive : S.dead,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: bird.alive ? const Color(0xFF2E9E5B) : Colors.red,
+                ),
+              ),
+          ],
         ),
       ),
     );

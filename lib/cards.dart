@@ -137,6 +137,7 @@ class _QrCardPageState extends State<QrCardPage> {
                         if (bird.kind.isNotEmpty) bird.kind,
                         if (bird.color.isNotEmpty) bird.color,
                         bird.sex,
+                        bird.alive ? S.alive : S.dead,
                       ].join(' • '),
                       style: const TextStyle(color: AppTheme.muted, fontSize: 12),
                     ),

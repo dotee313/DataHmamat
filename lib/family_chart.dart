@@ -32,11 +32,17 @@ class _ChartNode {
     required this.bird,
     required this.row,
     required this.x,
+    this.role,
+    this.eggInfo,
   });
 
   final Bird? bird;
   final int row;
   final double x;
+
+  /// دور هذه البطاقة في الفرع (أب/أم/شريك بيضة...)؛ كل ظهور لهويته المستقلة.
+  final String? role;
+  final String? eggInfo;
 }
 
 class _ChartLink {
@@ -72,7 +78,7 @@ class _FamilyChartViewState extends State<FamilyChartView> {
   Size _viewport = Size.zero;
 
   static const double _cardW = 116;
-  static const double _cardH = 116;
+  static const double _cardH = 132;
   static const double _leafGap = 142;
   static const double _siblingGap = 132;
   static const double _levelGap = 168;
@@ -100,36 +106,71 @@ class _FamilyChartViewState extends State<FamilyChartView> {
     final links = <_ChartLink>[];
     final seen = <String, _ChartNode>{};
     var leaf = 0.0;
-    var placeholders = 0;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final line = (dark ? Colors.white : AppTheme.purple).withValues(alpha: 0.45);
 
-    _ChartNode add(String? id, int row, double x) {
-      final key = id ?? 'empty-${placeholders++}';
+    String? eggText(Bird b) {
+      if (eggPartnerOf(b, widget.byId) == null && b.eggGeneration == null) {
+        return null;
+      }
+      return '${S.eggPartner} • ${S.generationLabel(eggGenerationOf(b, widget.byId))}';
+    }
+
+    _ChartNode add(
+      String? id,
+      int row,
+      double x, {
+      required String key,
+      String? role,
+      String? eggInfo,
+    }) {
       final existing = seen[key];
       if (existing != null) return existing;
       final node = _ChartNode(
         bird: id == null ? null : widget.byId[id],
         row: row,
         x: x,
+        role: role,
+        eggInfo: eggInfo,
       );
       seen[key] = node;
       nodes.add(node);
       return node;
     }
 
-    double place(String? id, int row) {
+    // مفتاح كل بطاقة هو «موقعها في الفرع» لا اسم الطير، حتى يبقى الطير
+    // نفسه حاضراً باسمه وصورته في خط الأب وخط الأم معاً عند التزويج بالقربى.
+    double place(
+      String? id,
+      int row,
+      String key,
+      Set<String> path, {
+      String? role,
+    }) {
       final bird = row <= widget.depth ? widget.byId[id] : null;
-      if (id == null || bird == null) {
+      if (id == null || bird == null || path.contains(id)) {
         final x = _pad + leaf * _leafGap;
         leaf++;
-        add(null, row, x);
+        add(id, row, x, key: key, role: role);
         return x;
       }
-      final fatherX = place(bird.fatherId, row + 1);
-      final motherX = place(bird.motherId, row + 1);
+      final nextPath = <String>{...path, id};
+      final fatherX = place(
+        bird.fatherId,
+        row + 1,
+        '$key.father',
+        nextPath,
+        role: S.father,
+      );
+      final motherX = place(
+        bird.motherId,
+        row + 1,
+        '$key.mother',
+        nextPath,
+        role: S.mother,
+      );
       final x = (fatherX + motherX) / 2;
-      add(id, row, x);
+      add(id, row, x, key: key, role: role);
 
       if (widget.byId[bird.fatherId] != null &&
           widget.byId[bird.motherId] != null) {
@@ -150,8 +191,21 @@ class _FamilyChartViewState extends State<FamilyChartView> {
     }
 
     // خط الأب وخط الأم منفصلان، ثم يتقيان عند الطير المركزي وإخوته.
-    final fatherX = place(widget.focus.fatherId, 1);
-    final motherX = place(widget.focus.motherId, 1);
+    final rootPath = <String>{widget.focus.id};
+    final fatherX = place(
+      widget.focus.fatherId,
+      1,
+      'focus.father',
+      rootPath,
+      role: S.father,
+    );
+    final motherX = place(
+      widget.focus.motherId,
+      1,
+      'focus.mother',
+      rootPath,
+      role: S.mother,
+    );
     final fatherKnown = widget.byId[widget.focus.fatherId] != null;
     final motherKnown = widget.byId[widget.focus.motherId] != null;
     final parentsKnown = fatherKnown && motherKnown;
@@ -185,10 +239,18 @@ class _FamilyChartViewState extends State<FamilyChartView> {
         : _pad + leaf * _leafGap;
 
     for (var i = 0; i < siblings.length; i++) {
+      final b = siblings[i];
       final x = hasParents || siblings.length > 1
           ? parentX + (i - (siblings.length - 1) / 2) * _siblingGap
           : focusX;
-      add(siblings[i].id, 0, x);
+      add(
+        b.id,
+        0,
+        x,
+        key: 'sibling.${b.id}',
+        role: b.id == widget.focus.id ? null : S.eggPartner,
+        eggInfo: eggText(b),
+      );
       if (hasParents) {
         links.add(_ChartLink(
           Offset(parentX, _yFor(1) + _cardH / 2),
@@ -206,8 +268,15 @@ class _FamilyChartViewState extends State<FamilyChartView> {
         .toList()
       ..sort((a, b) => a.bornOn.compareTo(b.bornOn));
     for (var i = 0; i < children.length; i++) {
+      final b = children[i];
       final x = focusX + (i - (children.length - 1) / 2) * _siblingGap;
-      add(children[i].id, -1, x);
+      add(
+        b.id,
+        -1,
+        x,
+        key: 'child.${b.id}',
+        eggInfo: eggText(b),
+      );
       links.add(_ChartLink(
         Offset(focusX, _yFor(0) + _cardH / 2),
         Offset(x, _yFor(-1) - _cardH / 2),
@@ -452,6 +521,7 @@ class _ChartCard extends StatelessWidget {
   final VoidCallback onTap;
 
   String _rowLabel() {
+    if (node.role != null && node.role!.isNotEmpty) return node.role!;
     if (node.row == 0) return S.focusBird;
     if (node.row < 0) return S.children;
     return '${S.generation} ${node.row}';
@@ -463,7 +533,7 @@ class _ChartCard extends StatelessWidget {
     final color = birdColor(bird);
     final surface = Theme.of(context).colorScheme.surface;
     final ink = Theme.of(context).colorScheme.onSurface;
-    final label = node.row == 0 ? S.focusBird : _rowLabel();
+    final label = _rowLabel();
 
     return GestureDetector(
       onTap: bird == null ? null : onTap,
@@ -524,6 +594,24 @@ class _ChartCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 9, color: AppTheme.muted),
+              ),
+            if (bird != null)
+              Text(
+                bird.alive ? S.alive : S.dead,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: bird.alive ? const Color(0xFF2E9E5B) : Colors.red,
+                ),
+              ),
+            if (node.eggInfo != null && node.eggInfo!.isNotEmpty)
+              Text(
+                node.eggInfo!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 8.5, color: AppTheme.gold),
               ),
             const Spacer(),
             Container(

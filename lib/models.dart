@@ -15,6 +15,20 @@ class Bird {
   List<String> photoLog;
   bool reminders;
 
+  /// الحالة الحياتية: true = حي، false = ميت.
+  bool alive;
+
+  /// الصفات الجاهزة الوراثية بأسماها العربية كما أدخلها المستخدم.
+  List<String> traits;
+
+  /// شريك البيضة (البيضة الأخرى/الأخت من الحضنة نفسها).
+  String? eggPartnerId;
+  int? eggGeneration;
+
+  /// الطيور الافتراضية التي تُستخدم في التزويج الاختباري فقط،
+  /// ولا تُدرج في قائمة «طيوري».
+  bool isVirtual;
+
   Bird({
     required this.id,
     required this.name,
@@ -31,9 +45,15 @@ class Bird {
     List<String>? photos,
     List<String>? photoLog,
     this.reminders = true,
+    this.alive = true,
+    List<String>? traits,
+    this.eggPartnerId,
+    this.eggGeneration,
+    this.isVirtual = false,
   })  : bornOn = bornOn ?? DateTime.now(),
         photos = photos ?? <String>[],
-        photoLog = photoLog ?? <String>[];
+        photoLog = photoLog ?? <String>[],
+        traits = traits ?? <String>[];
 
   bool get isDue {
     if (!reminders || nextPhotoDue == null) return false;
@@ -56,6 +76,11 @@ class Bird {
         'photos': photos,
         'photoLog': photoLog,
         'reminders': reminders,
+        'alive': alive,
+        'traits': traits,
+        'eggPartnerId': eggPartnerId,
+        'eggGeneration': eggGeneration,
+        'virtual': isVirtual,
       };
 
   factory Bird.fromJson(Map<String, dynamic> json) => Bird(
@@ -74,6 +99,11 @@ class Bird {
         photos: _list(json['photos']),
         photoLog: _list(json['photoLog']),
         reminders: json['reminders'] != false,
+        alive: json['alive'] != false,
+        traits: _list(json['traits']),
+        eggPartnerId: json['eggPartnerId']?.toString(),
+        eggGeneration: int.tryParse(json['eggGeneration']?.toString() ?? ''),
+        isVirtual: json['virtual'] == true,
       );
 
   Bird copyWith({
@@ -91,6 +121,15 @@ class Bird {
     List<String>? photos,
     List<String>? photoLog,
     bool? reminders,
+    bool? alive,
+    List<String>? traits,
+    String? eggPartnerId,
+    int? eggGeneration,
+    bool? isVirtual,
+    bool clearFather = false,
+    bool clearMother = false,
+    bool clearEggPartner = false,
+    bool clearEggGeneration = false,
   }) =>
       Bird(
         id: id,
@@ -100,14 +139,21 @@ class Bird {
         sex: sex ?? this.sex,
         ring: ring ?? this.ring,
         cv: cv ?? this.cv,
-        fatherId: fatherId ?? this.fatherId,
-        motherId: motherId ?? this.motherId,
+        fatherId: clearFather ? null : (fatherId ?? this.fatherId),
+        motherId: clearMother ? null : (motherId ?? this.motherId),
         bornOn: bornOn ?? this.bornOn,
         lastPhotoAt: lastPhotoAt ?? this.lastPhotoAt,
         nextPhotoDue: nextPhotoDue ?? this.nextPhotoDue,
         photos: photos ?? this.photos,
         photoLog: photoLog ?? this.photoLog,
         reminders: reminders ?? this.reminders,
+        alive: alive ?? this.alive,
+        traits: traits ?? this.traits,
+        eggPartnerId:
+            clearEggPartner ? null : (eggPartnerId ?? this.eggPartnerId),
+        eggGeneration:
+            clearEggGeneration ? null : (eggGeneration ?? this.eggGeneration),
+        isVirtual: isVirtual ?? this.isVirtual,
       );
 
   static DateTime? _date(dynamic value) =>
@@ -403,3 +449,41 @@ double kinship(String? a, String? b, Map<String, Bird> byId) {
 /// معامل التزواج الداخلي للطير = قرابة أبويه ÷ ٢.
 double inbreedingCoefficient(Bird bird, Map<String, Bird> byId) =>
     kinship(bird.fatherId, bird.motherId, byId) / 2;
+
+List<Bird> eggSiblings(Bird bird, Map<String, Bird> byId) {
+  if (bird.fatherId == null && bird.motherId == null) return <Bird>[];
+  final siblings = byId.values
+      .where((b) =>
+          b.id != bird.id &&
+          b.fatherId == bird.fatherId &&
+          b.motherId == bird.motherId)
+      .toList()
+    ..sort((a, b) => a.bornOn.compareTo(b.bornOn));
+  return List<Bird>.unmodifiable(siblings);
+}
+
+/// شريك البيضة: البيضة الثانية أو الأخت من الحضنة نفسها.
+/// يُستخدم الربط الصريح إن وُجد، وإلا يُستنتج من ترتيب الإخوة.
+Bird? eggPartnerOf(Bird bird, Map<String, Bird> byId) {
+  final explicit = bird.eggPartnerId == null ? null : byId[bird.eggPartnerId];
+  if (explicit != null) return explicit;
+  final list = <Bird>[bird, ...eggSiblings(bird, byId)]
+    ..sort((a, b) => a.bornOn.compareTo(b.bornOn));
+  if (list.length < 2) return null;
+  final i = list.indexWhere((b) => b.id == bird.id);
+  if (i < 0) return null;
+  final partnerIndex = i.isEven ? i + 1 : i - 1;
+  if (partnerIndex < 0 || partnerIndex >= list.length) return null;
+  return list[partnerIndex];
+}
+
+/// جيل شريك البيضة: كل بيضتين معاً جيل، ثم الثاني، ثم الثالث وهلم جراً.
+int eggGenerationOf(Bird bird, Map<String, Bird> byId) {
+  final saved = bird.eggGeneration;
+  if (saved != null && saved > 0) return saved;
+  final list = <Bird>[bird, ...eggSiblings(bird, byId)]
+    ..sort((a, b) => a.bornOn.compareTo(b.bornOn));
+  final i = list.indexWhere((b) => b.id == bird.id);
+  if (i < 0) return 1;
+  return i ~/ 2 + 1;
+}

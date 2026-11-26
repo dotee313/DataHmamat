@@ -193,7 +193,105 @@ abstract final class S {
   static String get aboutText => ar
       ? 'سجل الحمامات المحلي. بياناتك ملكك، تبقى على جهازك.'
       : 'Your offline pigeon record. Your data stays on your device.';
-  static String get version => ar ? 'الإصدار 0.3.1' : 'Version 0.3.1';
+  static String get version => ar ? 'الإصدار 0.5.0' : 'Version 0.5.0';
+
+  /// الصفات الجاهزة بأسمائها العربية كما كُتبت، بلا تحريف ولا تشكيل.
+  static const List<String> readyColors = <String>[
+    'ابيض',
+    'كريمي',
+    'اصفر',
+    'جوزي',
+    'طيني',
+    'حني',
+    'احمر',
+    'ازرق',
+    'رمادي',
+    'اسود',
+  ];
+  static const List<String> readyMarks = <String>[
+    'مكحكل الراس',
+    'مكلش الرجل',
+    'وردة الصدر',
+    'فتيلا الراس',
+  ];
+  static const List<String> readyWingBeak = <String>[
+    'جناح ذو شريط',
+    'ذو شريطين',
+    'جناح ذو نقاط',
+    'جناح صافي',
+    'جناح ذو شريطين منقط',
+    'جناح ذو شريط منقط',
+    'منقار قصير',
+    'منقار متوسط',
+    'منقار طويل',
+  ];
+  static const List<String> readyTraits = <String>[
+    ...readyMarks,
+    ...readyWingBeak,
+  ];
+
+  /// أسماء الأجيال كما طلبها المستخدم حرفياً.
+  static String generationName(int n) {
+    if (n <= 0) return 'الاول';
+    const names = <String>[
+      'الاول',
+      'ثاني',
+      'الثالث',
+      'الرابع',
+      'الخامس',
+      'السادس',
+      'السابع',
+      'الثامن',
+      'التاسع',
+      'العاشر',
+    ];
+    return n <= names.length ? names[n - 1] : 'ال${n}';
+  }
+
+  static String get alive => ar ? 'حي' : 'Alive';
+  static String get dead => ar ? 'ميت' : 'Deceased';
+  static String get lifeStatus => ar ? 'الحالة' : 'Life status';
+  static String get eggPartner => ar ? 'شريك البيضة' : 'Egg partner';
+  static String get eggPartnerHint => ar
+      ? 'البيضة الثانية أو الأخت من الحضنة نفسها. كل بيضتين معاً جيل.'
+      : 'The second egg or sibling from the same clutch. Every two eggs form a generation.';
+  static String get eggPartnerNone => ar
+      ? 'لا يوجد شريك بيضة مسجّل'
+      : 'No egg partner recorded';
+  static String generationLabel(int n) =>
+      ar ? 'جيل ${generationName(n)}' : 'Generation $n';
+  static String get readyTraitsTitle =>
+      ar ? 'الصفات الجاهزة' : 'Ready traits';
+  static String get colorsTitle => ar ? 'الألوان' : 'Colors';
+  static String get marksTitle => ar ? 'الرأس والرجل والصدر' : 'Head, feet, chest';
+  static String get wingBeakTitle => ar ? 'الجناح والمنقار' : 'Wing and beak';
+  static String get writeType => ar ? 'اكتب نوعًا' : 'Write a type';
+  static String get writeTypeHint => ar
+      ? 'احفظ نوع الأب أو الأم حين لا تعرفه، بالاسم والصورة والصفات، دون إضافته إلى قائمة طيوري.'
+      : 'Save an unknown parent type with its name, photo and traits without adding it to My Birds.';
+  static String get addType => ar ? 'إضافة نوع' : 'Add type';
+  static String get typeName => ar ? 'اسم النوع' : 'Type name';
+  static String get savedTypes => ar ? 'الأنواع المحفوظة' : 'Saved types';
+  static String get noSavedTypes => ar ? 'لا توجد أنواع محفوظة' : 'No saved types';
+  static String get virtualBird => ar ? 'حمامة افتراضية' : 'Virtual pigeon';
+  static String get myBirdsSource => ar ? 'من طيوري' : 'From my birds';
+  static String get typesSource => ar ? 'من الأنواع المكتوبة' : 'From saved types';
+  static String get testMating => ar ? 'التزويج الاختباري' : 'Test mating';
+  static String get testMatingSub => ar
+      ? 'تزويج طيرين لمعرفة ألوان وأشكال الفراخ المتوقعة، ويمكن صنع حمامة افتراضية لمعرفة ماذا تشتري.'
+      : 'Mate two birds to see expected chick colors and traits, including virtual pigeons.';
+  static String get selectFirstParent => ar ? 'الطير الأول' : 'First bird';
+  static String get selectSecondParent => ar ? 'الطير الثاني' : 'Second bird';
+  static String get calculate => ar ? 'احسب الاحتمالات' : 'Calculate chances';
+  static String get expectedTraits => ar ? 'الصفات المتوقعة' : 'Expected traits';
+  static String get traitChance => ar ? 'الاحتمال' : 'Chance';
+  static String get testMatingHint => ar
+      ? 'تقدير وراثي مبسيّط يعتمد على الصفات المدخلة، وليس ضماناً للون أو الشكل الفعلي.'
+      : 'A simple estimate from the entered traits, not a guarantee of the actual result.';
+  static String get chooseTwoParents => ar
+      ? 'اختر طيرين أو نوعين مختلفين لحساب الاحتمالات.'
+      : 'Choose two different birds or types to calculate chances.';
+  static String get noPrediction => ar ? 'لا توجد صفات كافية للتوقّع' : 'Not enough traits to predict';
   static String get confirmDelete => ar ? 'تأكيد الحذف؟' : 'Confirm delete?';
   static String get confirmDeleteBody => ar
       ? 'ستُحذف البيانات من الملف المحلي.'

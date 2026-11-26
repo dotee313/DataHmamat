@@ -7,6 +7,7 @@ import 'l10n.dart';
 import 'models.dart';
 import 'pdf_export.dart';
 import 'storage.dart';
+import 'test_mating.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -114,6 +115,11 @@ class _PedigreePageState extends State<PedigreePage> {
           child: _offspring(selected),
         ),
         SectionCard(
+          title: S.eggPartner,
+          icon: Icons.egg_outlined,
+          child: _eggPartner(selected, byId),
+        ),
+        SectionCard(
           title: S.bilateral,
           icon: Icons.account_tree_outlined,
           trailing: DropdownButton<int>(
@@ -204,11 +210,79 @@ class _PedigreePageState extends State<PedigreePage> {
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () async {
+              await Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TestMatingPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.biotech_outlined, size: 18),
+            label: Text(S.testMating),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: _sharePdf,
             icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
             label: Text(S.pedigreePdf),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _eggPartner(Bird bird, Map<String, Bird> byId) {
+    final partner = eggPartnerOf(bird, byId);
+    final generation = eggGenerationOf(bird, byId);
+    if (partner == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            S.eggPartnerHint,
+            style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            S.eggPartnerNone,
+            style: const TextStyle(fontSize: 12, color: AppTheme.muted),
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          S.eggPartnerHint,
+          style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            BirdCircle(bird: bird, diameter: 52),
+            const SizedBox(width: 10),
+            Text(S.eggPartner, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 10),
+            BirdCircle(
+              bird: partner,
+              diameter: 52,
+              onTap: () => setState(() => _selected = partner.id),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          <String>[
+            '${bird.name} ↔ ${partner.name}',
+            S.generationLabel(generation),
+          ].join(' • '),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
         ),
       ],
     );

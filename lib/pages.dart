@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -13,7 +15,9 @@ import 'pdf_export.dart';
 import 'pedigree.dart';
 import 'stats.dart';
 import 'storage.dart';
+import 'test_mating.dart';
 import 'theme.dart';
+import 'type_form.dart';
 import 'widgets.dart';
 
 class HomePage extends StatefulWidget {
@@ -249,6 +253,7 @@ class _BirdsPageState extends State<BirdsPage> {
                       if (bird.kind.isNotEmpty) bird.kind,
                       if (bird.color.isNotEmpty) bird.color,
                       bird.sex,
+                      bird.alive ? S.alive : S.dead,
                       ageText(bird.bornOn),
                     ].join(' • ')),
                     trailing: bird.isDue
@@ -991,6 +996,15 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<void> _openTypeForm([Bird? type]) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => TypeFormPage(type: type)),
+    );
+    if (!mounted) return;
+    setState(() {});
+    widget.onChanged();
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = Store.instance;
@@ -1019,6 +1033,94 @@ class _SettingsPageState extends State<SettingsPage> {
                 onTap: () => _openSection(
                     S.expensesPage, FinancePage(onChanged: widget.onChanged)),
               ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.biotech_outlined,
+                    color: AppTheme.purple),
+                title: Text(S.testMating),
+                trailing: const Icon(Icons.chevron_left, color: AppTheme.muted),
+                onTap: () async {
+                  await Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const TestMatingPage(),
+                    ),
+                  );
+                  if (!mounted) return;
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        ),
+        SectionCard(
+          title: S.writeType,
+          icon: Icons.edit_note_outlined,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                S.writeTypeHint,
+                style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+              ),
+              const SizedBox(height: 10),
+              FilledButton.icon(
+                onPressed: () => _openTypeForm(),
+                icon: const Icon(Icons.add_outlined),
+                label: Text(S.addType),
+              ),
+              if (store.types.isEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  S.noSavedTypes,
+                  style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+                ),
+              ] else ...[
+                const SizedBox(height: 10),
+                for (final type in store.types)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: type.photos.isNotEmpty &&
+                            File(type.photos.last).existsSync()
+                        ? ClipOval(
+                            child: Image.file(
+                              File(type.photos.last),
+                              width: 38,
+                              height: 38,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  const Icon(Icons.pets_outlined),
+                            ),
+                          )
+                        : const Icon(Icons.pets_outlined),
+                    title: Text(type.name),
+                    subtitle: Text(
+                      <String>[
+                        if (type.color.isNotEmpty) type.color,
+                        ...type.traits,
+                      ].join(' • '),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          onPressed: () => _openTypeForm(type),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, size: 18),
+                          onPressed: () async {
+                            await store.removeType(type.id);
+                            if (!mounted) return;
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -1384,7 +1486,10 @@ class _BirdDetailPageState extends State<BirdDetailPage> {
         .where((w) => w.birdId == bird.id)
         .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
-    final coefficient = inbreedingCoefficient(bird, Store.instance.byId);
+    final byId = Store.instance.byId;
+    final coefficient = inbreedingCoefficient(bird, byId);
+    final eggPartner = eggPartnerOf(bird, byId);
+    final eggGeneration = eggGenerationOf(bird, byId);
 
     return Scaffold(
       appBar: AppBar(
@@ -1482,6 +1587,14 @@ class _BirdDetailPageState extends State<BirdDetailPage> {
                 InfoRow(label: S.kind, value: bird.kind),
                 InfoRow(label: S.color, value: bird.color),
                 InfoRow(label: S.sex, value: bird.sex),
+                InfoRow(label: S.lifeStatus, value: bird.alive ? S.alive : S.dead),
+                InfoRow(label: S.readyTraitsTitle, value: bird.traits.join(' • ')),
+                InfoRow(
+                  label: S.eggPartner,
+                  value: eggPartner == null
+                      ? S.eggPartnerNone
+                      : '${eggPartner.name} • ${S.generationLabel(eggGeneration)}',
+                ),
                 InfoRow(label: S.ring, value: bird.ring),
                 InfoRow(label: S.bornOn, value: formatDate(bird.bornOn)),
                 InfoRow(label: S.age, value: ageText(bird.bornOn)),

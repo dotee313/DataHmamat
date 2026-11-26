@@ -16,6 +16,9 @@ class Store {
   static final Store instance = Store._();
 
   final List<Bird> _birds = <Bird>[];
+
+  /// أنواع/حمامات افتراضية تُستخدم في التزويج الاختباري فقط.
+  final List<Bird> _types = <Bird>[];
   final List<Clutch> _clutches = <Clutch>[];
   final List<Expense> _expenses = <Expense>[];
   final List<FeedItem> _feed = <FeedItem>[];
@@ -24,6 +27,7 @@ class Store {
   final List<CalendarEvent> _events = <CalendarEvent>[];
 
   List<Bird> get birds => List<Bird>.unmodifiable(_birds);
+  List<Bird> get types => List<Bird>.unmodifiable(_types);
   List<Clutch> get clutches => List<Clutch>.unmodifiable(_clutches);
   List<Expense> get expenses => List<Expense>.unmodifiable(_expenses);
   List<FeedItem> get feed => List<FeedItem>.unmodifiable(_feed);
@@ -91,6 +95,11 @@ class Store {
     _birds
       ..clear()
       ..addAll(_read<Bird>('birds.json', (j) => Bird.fromJson(j)));
+    _types
+      ..clear()
+      ..addAll(_read<Bird>('types.json', (j) => Bird.fromJson(j))
+          .where((b) => b.isVirtual)
+          .toList());
     _clutches
       ..clear()
       ..addAll(_read<Clutch>('clutches.json', (j) => Clutch.fromJson(j)));
@@ -110,6 +119,7 @@ class Store {
       ..clear()
       ..addAll(_read<CalendarEvent>('events.json', (j) => CalendarEvent.fromJson(j)));
     _birds.sort((a, b) => a.name.compareTo(b.name));
+    _types.sort((a, b) => a.name.compareTo(b.name));
   }
 
   List<T> _read<T>(String file, T Function(Map<String, dynamic>) build) {
@@ -138,6 +148,44 @@ class Store {
     await _write('birds.json', _birds);
   }
 
+  Future<void> saveTypes() async {
+    _types.sort((a, b) => a.name.compareTo(b.name));
+    await _write('types.json', _types);
+  }
+
+  Future<void> upsertType(Bird bird) async {
+    final type = bird.copyWith(isVirtual: true);
+    final i = _types.indexWhere((b) => b.id == type.id);
+    if (i >= 0) {
+      _types[i] = type;
+    } else {
+      _types.add(type);
+    }
+    await saveTypes();
+  }
+
+  Future<void> removeType(String id) async {
+    _types.removeWhere((b) => b.id == id);
+    await saveTypes();
+  }
+
+  Bird? findType(String? id) {
+    if (id == null) return null;
+    for (final type in _types) {
+      if (type.id == id) return type;
+    }
+    return null;
+  }
+
+  Future<void> attachTypePhoto(Bird type, String path) async {
+    final now = DateTime.now();
+    await upsertType(type.copyWith(
+      photos: <String>[...type.photos, path],
+      lastPhotoAt: now,
+      photoLog: <String>[...type.photoLog, now.toIso8601String()],
+    ));
+  }
+
   Future<void> upsertBird(Bird bird) async {
     final i = _birds.indexWhere((b) => b.id == bird.id);
     if (i >= 0) {
@@ -155,10 +203,14 @@ class Store {
     _weights.removeWhere((w) => w.birdId == id);
     _events.removeWhere((e) => e.birdId == id);
     for (final bird in _birds) {
-      if (bird.fatherId == id || bird.motherId == id) {
+      if (bird.fatherId == id ||
+          bird.motherId == id ||
+          bird.eggPartnerId == id) {
         await upsertBird(bird.copyWith(
-          fatherId: bird.fatherId == id ? null : bird.fatherId,
-          motherId: bird.motherId == id ? null : bird.motherId,
+          clearFather: bird.fatherId == id,
+          clearMother: bird.motherId == id,
+          clearEggPartner: bird.eggPartnerId == id,
+          clearEggGeneration: bird.eggPartnerId == id,
         ));
       }
     }
@@ -401,9 +453,10 @@ class Store {
   /// تصدير شامل لكل السجلات داخل ملف واحد.
   Future<String> exportData() async {
     final payload = <String, dynamic>{
-      'version': 3,
+      'version': 4,
       'exportedAt': DateTime.now().toIso8601String(),
       'birds': _birds.map((e) => e.toJson()).toList(),
+      'types': _types.map((e) => e.toJson()).toList(),
       'clutches': _clutches.map((e) => e.toJson()).toList(),
       'expenses': _expenses.map((e) => e.toJson()).toList(),
       'feed': _feed.map((e) => e.toJson()).toList(),
@@ -429,6 +482,12 @@ class Store {
       ..addAll(section('birds')
           .whereType<Map>()
           .map((e) => Bird.fromJson(Map<String, dynamic>.from(e))));
+    _types
+      ..clear()
+      ..addAll(section('types')
+          .whereType<Map>()
+          .map((e) => Bird.fromJson(Map<String, dynamic>.from(e)))
+          .where((b) => b.isVirtual));
     _clutches
       ..clear()
       ..addAll(section('clutches')
@@ -460,6 +519,7 @@ class Store {
           .whereType<Map>()
           .map((e) => CalendarEvent.fromJson(Map<String, dynamic>.from(e))));
     await saveBirds();
+    await saveTypes();
     await _write('clutches.json', _clutches);
     await _write('expenses.json', _expenses);
     await _write('feed.json', _feed);

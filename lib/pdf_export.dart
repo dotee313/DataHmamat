@@ -20,7 +20,10 @@ abstract final class PdfExporter {
     final store = Store.instance;
     final father = store.find(bird.fatherId);
     final mother = store.find(bird.motherId);
-    final coefficient = inbreedingCoefficient(bird, store.byId);
+    final byId = store.byId;
+    final coefficient = inbreedingCoefficient(bird, byId);
+    final eggPartner = eggPartnerOf(bird, byId);
+    final eggGeneration = eggGenerationOf(bird, byId);
     final health = store.health.where((h) => h.birdId == bird.id).toList();
     final weights = store.weights.where((w) => w.birdId == bird.id).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
@@ -45,6 +48,15 @@ abstract final class PdfExporter {
           _line(S.kind, bird.kind, font),
           _line(S.color, bird.color, font),
           _line(S.sex, bird.sex, font),
+          _line(S.lifeStatus, bird.alive ? S.alive : S.dead, font),
+          _line(S.readyTraitsTitle, bird.traits.join(' • '), font),
+          _line(
+            S.eggPartner,
+            eggPartner == null
+                ? S.eggPartnerNone
+                : '${eggPartner.name} • ${S.generationLabel(eggGeneration)}',
+            font,
+          ),
           _line(S.ring, bird.ring, font),
           _line(S.bornOn, formatDate(bird.bornOn), font),
           _line(S.father, father?.name ?? S.unknown, font),
