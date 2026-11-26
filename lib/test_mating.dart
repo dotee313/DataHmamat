@@ -96,6 +96,7 @@ class _TestMatingPageState extends State<TestMatingPage> {
     final offspring = cross(fatherGenotype, motherGenotype);
     final ratios = sexRatios(offspring);
     final grouped = summarizeByPhenotype(offspring, limit: 0);
+    final beakLabel = expectedBeak(father, mother).lengthClassAr();
 
     setState(() {
       _error = null;
@@ -106,7 +107,7 @@ class _TestMatingPageState extends State<TestMatingPage> {
       _resultCount = grouped.length;
       _maleChance = ratios[PigeonSex.male] ?? 0;
       _femaleChance = ratios[PigeonSex.female] ?? 0;
-      _beakLabel = expectedBeak(father, mother).lengthClassAr();
+      _beakLabel = beakLabel;
       _fatherGenotype = fatherGenotype.toString();
       _motherGenotype = motherGenotype.toString();
     });
@@ -364,7 +365,7 @@ class _TestMatingPageState extends State<TestMatingPage> {
             const SizedBox(height: 12),
             SectionCard(
               title: S.geneticBasis,
-              icon: Icons.dna_outlined,
+              icon: Icons.science_outlined,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

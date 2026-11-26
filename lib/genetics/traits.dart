@@ -49,14 +49,14 @@ class BeakModel {
 }
 
 final Map<String, BeakModel> breedBeakPresets = <String, BeakModel>{
-  'racing_homer': const BeakModel(0.0, 0.0),
-  'carrier': const BeakModel(2.0, 1.5),
-  'short_faced_tumbler': const BeakModel(-2.5, -0.5),
-  'owl': const BeakModel(-1.5, 0.5),
-  'frillback': const BeakModel(0.0, 0.0),
-  'pouter': const BeakModel(1.0, 0.5),
-  'archangel': const BeakModel(0.5, 0.0),
-  'jacobin': const BeakModel(0.0, 0.0),
+  'racing_homer': const BeakModel(lengthScore: 0.0, widthScore: 0.0),
+  'carrier': const BeakModel(lengthScore: 2.0, widthScore: 1.5),
+  'short_faced_tumbler': const BeakModel(lengthScore: -2.5, widthScore: -0.5),
+  'owl': const BeakModel(lengthScore: -1.5, widthScore: 0.5),
+  'frillback': const BeakModel(lengthScore: 0.0, widthScore: 0.0),
+  'pouter': const BeakModel(lengthScore: 1.0, widthScore: 0.5),
+  'archangel': const BeakModel(lengthScore: 0.5, widthScore: 0.0),
+  'jacobin': const BeakModel(lengthScore: 0.0, widthScore: 0.0),
 };
 
 BeakModel beakFromBreed(String breed) {

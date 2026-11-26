@@ -1,4 +1,6 @@
 /// واجهة مكتبة الوراثة المحلية، المنقولة من UP-Pigen إلى Dart.
+library;
+
 export 'breeding.dart';
 export 'constants.dart';
 export 'genes.dart';

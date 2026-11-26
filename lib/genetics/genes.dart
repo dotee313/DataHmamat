@@ -1,8 +1,6 @@
 /// تعريف المواقع الجينية والآليلات، مطابق لمكتبة UP-Pigen.
 library;
 
-import 'constants.dart';
-
 class Allele {
   const Allele({
     required this.symbol,
@@ -57,7 +55,7 @@ class Locus {
   }
 
   @override
-  String toString() => '$symbol (${name})';
+  String toString() => '$symbol ($name)';
 }
 
 Allele _a(
