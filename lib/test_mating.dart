@@ -4,6 +4,7 @@ import 'family_tree.dart';
 import 'genetics/genetics.dart';
 import 'l10n.dart';
 import 'models.dart';
+import 'pigeon_painter.dart';
 import 'storage.dart';
 import 'theme.dart';
 import 'type_form.dart';
@@ -36,6 +37,8 @@ class _TestMatingPageState extends State<TestMatingPage> {
   String _fatherGenotype = '';
   String _motherGenotype = '';
   int _resultCount = 0;
+  List<ChickLook> _looks = <ChickLook>[];
+  double _beakScore = 0;
 
   List<DropdownMenuItem<String>> get _options => <DropdownMenuItem<String>>[
         const DropdownMenuItem<String>(value: null, child: Text('—')),
@@ -106,8 +109,9 @@ class _TestMatingPageState extends State<TestMatingPage> {
     final offspring = cross(fatherGenotype, motherGenotype);
     final ratios = sexRatios(offspring);
     final grouped = summarizeByPhenotype(offspring, limit: 0);
-    final beakLabel =
-        expectedBeakTraits(fatherTraits, motherTraits).lengthClassAr();
+    final beak = expectedBeakTraits(fatherTraits, motherTraits);
+    final beakLabel = beak.lengthClassAr();
+    final looks = topChickLooks(offspring, limit: 4);
 
     setState(() {
       _error = null;
@@ -119,6 +123,8 @@ class _TestMatingPageState extends State<TestMatingPage> {
       _maleChance = ratios[PigeonSex.male] ?? 0;
       _femaleChance = ratios[PigeonSex.female] ?? 0;
       _beakLabel = beakLabel;
+      _beakScore = beak.lengthScore;
+      _looks = looks;
       _fatherGenotype = fatherGenotype.toString();
       _motherGenotype = motherGenotype.toString();
     });
@@ -275,6 +281,61 @@ class _TestMatingPageState extends State<TestMatingPage> {
       ),
       items: _options,
       onChanged: onChanged,
+    );
+  }
+
+  Widget _lookTile(ChickLook look) {
+    final male = look.sex == PigeonSex.male;
+    final color = male ? AppTheme.purple : AppTheme.gold;
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PigeonView(phenotype: look.phenotype, beakScore: _beakScore),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  male ? S.male : S.female,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${(look.chance * 100).round()}%',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            look.phenotype.describeAr(),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 10, height: 1.3),
+          ),
+        ],
+      ),
     );
   }
 
@@ -439,6 +500,39 @@ class _TestMatingPageState extends State<TestMatingPage> {
                         ],
                       ),
           ),
+          if (_calculated && _looks.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SectionCard(
+              title: S.chickLooks,
+              icon: Icons.egg_alt_outlined,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    S.chickLooksSub,
+                    style: const TextStyle(fontSize: 11, color: AppTheme.muted),
+                  ),
+                  const SizedBox(height: 10),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final tileWidth = (constraints.maxWidth - 10) / 2;
+                      return Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final look in _looks)
+                            SizedBox(
+                              width: tileWidth,
+                              child: _lookTile(look),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (_calculated) ...[
             const SizedBox(height: 12),
             SectionCard(

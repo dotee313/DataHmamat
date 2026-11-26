@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'family_tree.dart';
+import 'genetics/genetics.dart'
+    show GeneTrace, GeneStatus, GeneTracer, geneChoiceByKey;
 import 'l10n.dart';
 import 'models.dart';
 import 'theme.dart';
@@ -16,12 +18,16 @@ class FamilyChartView extends StatefulWidget {
     required this.byId,
     required this.depth,
     required this.onSelect,
+    this.geneKey,
   });
 
   final Bird focus;
   final Map<String, Bird> byId;
   final int depth;
   final ValueChanged<String> onSelect;
+
+  /// مفتاح جين لتلوين البطاقات به (مثل `e|e`)، أو null بلا تلوين.
+  final String? geneKey;
 
   @override
   State<FamilyChartView> createState() => _FamilyChartViewState();
@@ -347,6 +353,14 @@ class _FamilyChartViewState extends State<FamilyChartView> {
         );
         _viewport = viewport;
         final layout = _computeLayout();
+        final choice = geneChoiceByKey(widget.geneKey);
+        final tracer = choice == null
+            ? null
+            : GeneTracer(
+                byId: widget.byId,
+                locus: choice.locus,
+                allele: choice.allele,
+              );
         if (!_fitted && constraints.hasBoundedHeight && constraints.hasBoundedWidth) {
           _fitted = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -387,6 +401,9 @@ class _FamilyChartViewState extends State<FamilyChartView> {
                             width: layout.cardWidth,
                             height: layout.cardHeight,
                             selected: node.bird?.id == widget.focus.id,
+                            trace: node.bird == null
+                                ? null
+                                : tracer?.traceOf(node.bird!),
                             onTap: () {
                               final bird = node.bird;
                               if (bird != null) widget.onSelect(bird.id);
@@ -512,6 +529,7 @@ class _ChartCard extends StatelessWidget {
     required this.height,
     required this.selected,
     required this.onTap,
+    this.trace,
   });
 
   final _ChartNode node;
@@ -519,6 +537,7 @@ class _ChartCard extends StatelessWidget {
   final double height;
   final bool selected;
   final VoidCallback onTap;
+  final GeneTrace? trace;
 
   String _rowLabel() {
     if (node.role != null && node.role!.isNotEmpty) return node.role!;
@@ -535,24 +554,46 @@ class _ChartCard extends StatelessWidget {
     final ink = Theme.of(context).colorScheme.onSurface;
     final label = _rowLabel();
 
-    return GestureDetector(
-      onTap: bird == null ? null : onTap,
-      child: AnimatedContainer(
+    // تلوين الجين: يظهر (أحمر)، حامل (برتقالي)، محتمل (أصفر)، لا يحمله (رمادي).
+    Color? geneColor;
+    String? geneLabel;
+    final t = trace;
+    if (t != null && bird != null) {
+      if (t.status == GeneStatus.shows) {
+        geneColor = const Color(0xFFE5484D);
+        geneLabel = S.geneShows;
+      } else if (t.status == GeneStatus.carrier) {
+        geneColor = const Color(0xFFF0A020);
+        geneLabel = S.geneCarrier;
+      } else if (t.status == GeneStatus.possible) {
+        geneColor = const Color(0xFFD9B400);
+        geneLabel = '${S.genePossible} ${t.percent}%';
+      } else {
+        geneColor = const Color(0xFF8E9AAF);
+        geneLabel = S.geneAbsent;
+      }
+    }
+
+    final card = AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         width: width,
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
         decoration: BoxDecoration(
           color: Color.alphaBlend(
-            color.withValues(alpha: bird == null ? 0.04 : 0.1),
+            (geneColor ?? color).withValues(
+              alpha: geneColor != null ? 0.2 : (bird == null ? 0.04 : 0.1),
+            ),
             surface,
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected
                 ? color
-                : color.withValues(alpha: bird == null ? 0.3 : 0.5),
-            width: selected ? 3 : 1.5,
+                : (geneColor ?? color).withValues(
+                    alpha: geneColor != null ? 0.9 : (bird == null ? 0.3 : 0.5),
+                  ),
+            width: selected ? 3 : (geneColor != null ? 2.4 : 1.5),
           ),
           boxShadow: selected
               ? [
@@ -633,6 +674,39 @@ class _ChartCard extends StatelessWidget {
             ),
           ],
         ),
+      );
+
+    return GestureDetector(
+      onTap: bird == null ? null : onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          card,
+          if (geneColor != null && geneLabel != null)
+            Positioned(
+              top: -8,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: geneColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    geneLabel,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -10,3 +10,7 @@ export 'mutations.dart';
 export 'phenotype.dart';
 export 'traits.dart';
 export 'validation.dart';
+export 'chick_look.dart';
+export 'gene_catalog.dart';
+export 'gene_trace.dart';
+export 'planner.dart';

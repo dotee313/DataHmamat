@@ -343,6 +343,59 @@ abstract final class S {
   static String get zoomOut => ar ? 'تصغير' : 'Zoom out';
   static String get fitView => ar ? 'ملاءمة الشاشة' : 'Fit to screen';
   static String get focusBird => ar ? 'الطير المركزي' : 'Focus bird';
+
+  // سلالة المرغوبة
+  static String get desiredBreed => ar ? 'سلالة المرغوبة' : 'Desired breed';
+  static String get desiredBreedSub => ar
+      ? 'اختر الصفات التي تحلم بها، ويبحث التطبيق في طيورك الحالية عن أقصر سلسلة تزاوجات للوصول إليها.'
+      : 'Pick the traits you dream of and the app searches your current birds for the shortest chain of matings to reach them.';
+  static String get pickGoals => ar ? 'الصفات المطلوبة' : 'Wanted traits';
+  static String get pickGoalsHint => ar
+      ? 'اختر صفة واحدة لكل جين، حتى خمس صفات.'
+      : 'One trait per gene, up to five traits.';
+  static String get findPath => ar ? 'ابحث عن أقصر طريق' : 'Find the shortest path';
+  static String get alreadyHaveIt => ar
+      ? 'عندك طير يحمل هذه المواصفات بالفعل:'
+      : 'You already have a bird with these traits:';
+  static String missingGenesMsg(String names) => ar
+      ? 'لا يحمل أي طير عندك: $names. التزاوج لا يصنع جيناً غير موجود، فتحتاج إلى شراء طير يحمله.'
+      : 'None of your birds carries: $names. Mating cannot create a missing gene, so you need to buy a bird that has it.';
+  static String get noPairMsg => ar
+      ? 'تحتاج إلى ذكر حي وأنثى حية على الأقل في طيورك.'
+      : 'You need at least one living male and one living female.';
+  static String tooFarMsg(int n) => ar
+      ? 'لا يمكن الوصول إليها خلال $n أجيال من طيورك الحالية. جرّب تقليل الصفات أو إضافة طير جديد.'
+      : 'Cannot be reached within $n generations from your current birds. Try fewer traits or add a new bird.';
+  static String stepN(int n) => ar ? 'الخطوة $n' : 'Step $n';
+  static String fromStep(int n) => ar ? 'فرخ الخطوة $n' : 'Chick of step $n';
+  static String get finalTarget => ar ? 'هذا هو الطير المطلوب' : 'This is the wanted bird';
+  static String get chickChance => ar ? 'احتمال هذا الفرخ' : 'Chance of this chick';
+  static String oneInEggs(int n) =>
+      ar ? 'واحد من كل $n بيضة تقريباً' : 'about 1 in every $n eggs';
+  static String generationsCount(int n) =>
+      ar ? 'عدد الأجيال: $n' : 'Generations: $n';
+  static String expectedEggsLabel(int n) =>
+      ar ? 'بيض متوقع: ≈ $n' : 'Expected eggs: ≈ $n';
+  static String get planNote => ar
+      ? 'الخطة مبنية على التراكيب الجينية التقريبية للألوان والصفات المسجّلة؛ الحامل الخفي غير المعروف لا يدخل في الحساب، والنتائج احتمالية وليست ضماناً.'
+      : 'The plan uses approximate genotypes mapped from recorded colors and traits; unknown hidden carriers are not counted, and results are probabilities, not guarantees.';
+
+  // تلوين الشجرة بالجين
+  static String get colorByGene => ar ? 'لوّن الشجرة حسب جين' : 'Color tree by gene';
+  static String get noColoring => ar ? 'بلا تلوين' : 'No coloring';
+  static String get geneShows => ar ? 'يظهر' : 'Shows';
+  static String get geneCarrier => ar ? 'حامل' : 'Carrier';
+  static String get genePossible => ar ? 'محتمل' : 'Possible';
+  static String get geneAbsent => ar ? 'لا يحمله' : 'None';
+  static String get geneTraceNote => ar
+      ? 'مبني على الألوان والصفات المسجّلة وعلى النسب؛ «محتمل» تقدير بقوانين مندل.'
+      : 'Based on recorded colors, traits and ancestry; "possible" is a Mendelian estimate.';
+
+  // شكل الفرخ المتوقع
+  static String get chickLooks => ar ? 'شكل الفرخ المتوقع' : 'Expected chick look';
+  static String get chickLooksSub => ar
+      ? 'رسم تقريبي لأكثر الفراخ احتمالاً بألوانها وصفاتها.'
+      : 'A rough drawing of the most likely chicks with their colors and traits.';
   static String get partnersChildren => ar ? 'الأزواج والأبناء' : 'Mates and offspring';
   static String get tapToOpen => ar ? 'اضغط على أي طير لفتح شجرته' : 'Tap any bird to open its tree';
   static String get risk => ar ? 'مستوى الخطر' : 'Risk level';

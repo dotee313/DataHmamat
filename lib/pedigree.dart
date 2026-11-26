@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'family_chart.dart';
+import 'desired_breed.dart';
 import 'family_tree.dart';
+import 'genetics/genetics.dart' show traceChoices, geneChoiceByKey;
 import 'l10n.dart';
 import 'models.dart';
 import 'pdf_export.dart';
@@ -26,6 +28,7 @@ class _PedigreePageState extends State<PedigreePage> {
   String? _other;
   int _generations = 5;
   int _chartDepth = 3;
+  String? _geneKey;
 
   Future<void> _sharePdf() async {
     final birds = Store.instance.birds;
@@ -99,14 +102,21 @@ class _PedigreePageState extends State<PedigreePage> {
               ),
             ],
           ),
-          child: SizedBox(
-            height: 420,
-            child: FamilyChartView(
-              focus: selected,
-              byId: byId,
-              depth: _chartDepth,
-              onSelect: (id) => setState(() => _selected = id),
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _geneBar(),
+              SizedBox(
+                height: 420,
+                child: FamilyChartView(
+                  focus: selected,
+                  byId: byId,
+                  depth: _chartDepth,
+                  geneKey: _geneKey,
+                  onSelect: (id) => setState(() => _selected = id),
+                ),
+              ),
+            ],
           ),
         ),
         SectionCard(
@@ -231,7 +241,78 @@ class _PedigreePageState extends State<PedigreePage> {
             label: Text(S.pedigreePdf),
           ),
         ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              await Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const DesiredBreedPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+            label: Text(S.desiredBreed),
+          ),
+        ),
       ],
+    );
+  }
+
+  /// اختيار جين لتلوين الشجرة به، مع مفتاح الألوان.
+  Widget _geneBar() {
+    Widget dot(Color color, String text) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 4),
+            Text(text, style: const TextStyle(fontSize: 10)),
+          ],
+        );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DropdownButtonFormField<String?>(
+            initialValue: _geneKey,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: S.colorByGene,
+              prefixIcon: const Icon(Icons.bubble_chart_outlined),
+            ),
+            items: [
+              DropdownMenuItem<String?>(value: null, child: Text(S.noColoring)),
+              for (final c in traceChoices)
+                DropdownMenuItem<String?>(value: c.key, child: Text(c.label)),
+            ],
+            onChanged: (v) => setState(() => _geneKey = v),
+          ),
+          if (geneChoiceByKey(_geneKey) != null) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              children: [
+                dot(const Color(0xFFE5484D), S.geneShows),
+                dot(const Color(0xFFF0A020), S.geneCarrier),
+                dot(const Color(0xFFD9B400), S.genePossible),
+                dot(const Color(0xFF8E9AAF), S.geneAbsent),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              S.geneTraceNote,
+              style: const TextStyle(fontSize: 9, color: AppTheme.muted),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
