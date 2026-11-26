@@ -193,7 +193,7 @@ abstract final class S {
   static String get aboutText => ar
       ? 'سجل الحمامات المحلي. بياناتك ملكك، تبقى على جهازك.'
       : 'Your offline pigeon record. Your data stays on your device.';
-  static String get version => ar ? 'الإصدار 0.5.0' : 'Version 0.5.0';
+  static String get version => ar ? 'الإصدار 0.6.0' : 'Version 0.6.0';
 
   /// الصفات الجاهزة بأسمائها العربية كما كُتبت، بلا تحريف ولا تشكيل.
   static const List<String> readyColors = <String>[
@@ -286,12 +286,27 @@ abstract final class S {
   static String get expectedTraits => ar ? 'الصفات المتوقعة' : 'Expected traits';
   static String get traitChance => ar ? 'الاحتمال' : 'Chance';
   static String get testMatingHint => ar
-      ? 'تقدير وراثي مبسيّط يعتمد على الصفات المدخلة، وليس ضماناً للون أو الشكل الفعلي.'
-      : 'A simple estimate from the entered traits, not a guarantee of the actual result.';
+      ? 'يستخدم نموذج UP-Pigen الوراثي: توريث مرتبط بالجنس ومربع بونيت، والنتيجة احتمالية وليست ضماناً للون الفعلي.'
+      : 'Uses the UP-Pigen model: sex-linked inheritance and Punnett squares; results are probabilities, not guarantees.';
   static String get chooseTwoParents => ar
       ? 'اختر طيرين أو نوعين مختلفين لحساب الاحتمالات.'
       : 'Choose two different birds or types to calculate chances.';
   static String get noPrediction => ar ? 'لا توجد صفات كافية للتوقّع' : 'Not enough traits to predict';
+  static String get sameSexError => ar
+      ? 'لا يمكن التزويج بين طيرين من نفس الجنس؛ اختر ذكراً وأنثى.'
+      : 'Choose one male and one female to mate.';
+  static String get geneticBasis =>
+      ar ? 'الأساس الوراثي (UP-Pigen)' : 'Genetic basis (UP-Pigen)';
+  static String get parentGenotypes =>
+      ar ? 'التركيب الوراثي للأب والأم' : 'Parent genotypes';
+  static String get offspringSexes =>
+      ar ? 'نسبة الذكور إلى الإناث' : 'Sex ratio';
+  static String get expectedBeak => ar ? 'المنقار المتوقع' : 'Expected beak';
+  static String get approximateMapping => ar
+      ? 'تُترجم الألوان والصفات إلى تراكيب جينية تقريبية وفق نموذج UP-Pigen؛ النتائج احتمالية وليست ضماناً.'
+      : 'Colors and traits are mapped to approximate genotypes using UP-Pigen; results are probabilities, not guarantees.';
+  static String resultCount(int n) =>
+      ar ? 'عدد النتائج المختلفة: $n' : '$n distinct results';
   static String get confirmDelete => ar ? 'تأكيد الحذف؟' : 'Confirm delete?';
   static String get confirmDeleteBody => ar
       ? 'ستُحذف البيانات من الملف المحلي.'
