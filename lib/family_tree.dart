@@ -70,8 +70,9 @@ class BirdCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final b = bird;
     final color =
-        bird == null ? (placeholderColor ?? AppTheme.muted) : birdColor(bird);
+        b == null ? (placeholderColor ?? AppTheme.muted) : birdColor(b);
     final surface = Theme.of(context).colorScheme.surface;
     final circle = Container(
       width: diameter,
@@ -80,9 +81,9 @@ class BirdCircle extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Color.alphaBlend(
-            color.withValues(alpha: bird == null ? 0.05 : 0.14), surface),
+            color.withValues(alpha: b == null ? 0.05 : 0.14), surface),
         border: Border.all(
-          color: color.withValues(alpha: bird == null ? 0.35 : 1),
+          color: color.withValues(alpha: b == null ? 0.35 : 1),
           width: highlight ? 4 : 2.5,
         ),
         boxShadow: highlight
@@ -101,7 +102,7 @@ class BirdCircle extends StatelessWidget {
       alignment: Alignment.bottomRight,
       children: [
         circle,
-        if (bird != null && !bird.alive)
+        if (b != null && !b.alive)
           Positioned(
             right: -1,
             bottom: -1,
@@ -121,7 +122,7 @@ class BirdCircle extends StatelessWidget {
           ),
       ],
     );
-    if (onTap == null || bird == null) return decorated;
+    if (onTap == null || b == null) return decorated;
     return GestureDetector(onTap: onTap, child: decorated);
   }
 }

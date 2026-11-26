@@ -179,8 +179,8 @@ class _BirdFormPageState extends State<BirdFormPage> {
             _chipGroup(
               title: S.colorsTitle,
               values: S.readyColors,
-              selected: (v) => _color == v,
-              onSelected: (v, on) => setState(() => _color = on ? v : ''),
+              selected: (v) => _color.text == v,
+              onSelected: (v, on) => setState(() => _color.text = on ? v : ''),
             ),
             const SizedBox(height: 8),
             _chipGroup(

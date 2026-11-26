@@ -245,7 +245,7 @@ abstract final class S {
       'التاسع',
       'العاشر',
     ];
-    return n <= names.length ? names[n - 1] : 'ال${n}';
+    return n <= names.length ? names[n - 1] : 'ال$n';
   }
 
   static String get alive => ar ? 'حي' : 'Alive';

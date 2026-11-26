@@ -93,6 +93,33 @@ class _TypeFormPageState extends State<TypeFormPage> {
     });
   }
 
+  Widget _colorChips() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          S.colorsTitle,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 6,
+          runSpacing: -2,
+          children: [
+            for (final value in S.readyColors)
+              FilterChip(
+                label: Text(value, style: const TextStyle(fontSize: 11)),
+                selected: _color.text == value,
+                showCheckmark: false,
+                onSelected: (on) =>
+                    setState(() => _color.text = on ? value : ''),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _chipGroup(String title, List<String> values) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +177,7 @@ class _TypeFormPageState extends State<TypeFormPage> {
               ),
             ),
             const SizedBox(height: 8),
-            _chipGroup(S.colorsTitle, S.readyColors),
+            _colorChips(),
             const SizedBox(height: 10),
             _chipGroup(S.marksTitle, S.readyMarks),
             const SizedBox(height: 10),
